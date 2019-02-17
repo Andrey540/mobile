@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Equation solver</string>
+    <string name="solve">SOLVE</string>
+    <string name="discriminant">D: </string>
+    <string name="valueX1">X1: </string>
+    <string name="valueX2">X2: </string>
+    <string name="factorA">A </string>
+    <string name="factorB">B </string>
+    <string name="factorC">C </string>
+    <string name="enterA">Please, enter a factor A</string>
+    <string name="enterB">Please, enter a factor B</string>
+    <string name="enterC">Please, enter a factor C</string>
+    <string name="emptyA">Factor A can not be 0</string>
+    <string name="negativeDiscriminant">Negative discriminant</string>
+    <string name="equation_example">A * x<sup>2</sup> + B * x + C = 0</string>
+</resources>

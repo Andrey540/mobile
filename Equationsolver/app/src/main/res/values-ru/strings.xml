@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Калькулятор уравнений</string>
+    <string name="solve">Решить</string>
+    <string name="discriminant">D: </string>
+    <string name="valueX1">X1: </string>
+    <string name="valueX2">X2: </string>
+    <string name="factorA">A </string>
+    <string name="factorB">B </string>
+    <string name="factorC">C </string>
+    <string name="enterA">Пожалуйста, введите коэфициент A</string>
+    <string name="enterB">Пожалуйста, введите коэфициент B</string>
+    <string name="enterC">Пожалуйста, введите коэфициент C</string>
+    <string name="emptyA">Коэфициент A не может быть равен 0</string>
+    <string name="negativeDiscriminant">Отрицательный дискриминант</string>
+    <string name="equation_example">A * x<sup>2</sup> + B * x + C = 0</string>
+</resources>
