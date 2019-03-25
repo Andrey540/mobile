@@ -1,0 +1,6 @@
+<resources>
+    <string name="fragment_tag_list" translatable="false">fragment_list</string>
+    <string name="fragment_tag_player" translatable="false">fragment_player</string>
+
+    <string name="player_song_not_selected">Song not selected…</string>
+</resources>
