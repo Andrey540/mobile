@@ -43,7 +43,6 @@ class PlayerActivity : AppCompatActivity() {
                 updatePlayingButtons(newState)
             }
         })
-        mPlayerPresenter.subscribe(viewModel)
 
         initButtons()
         initTimeline()

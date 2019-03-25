@@ -39,9 +39,6 @@ class PlaylistActivity : AppCompatActivity() {
             }
         })
 
-        mPlayerListPresenter.subscribe(viewModel)
-        mPlayerPresenter.subscribe(viewModel)
-
         initIntroView()
     }
 
