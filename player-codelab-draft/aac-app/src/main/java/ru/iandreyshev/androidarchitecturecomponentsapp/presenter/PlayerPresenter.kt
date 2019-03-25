@@ -11,4 +11,5 @@ class PlayerPresenter(
     fun onRestart() = player.onRestart()
     fun onChangeTimePosition(timePercent: Float) = player.onChangeTimelinePosition(timePercent)
     fun subscribe(presenter: IPlayerPresenter) = player.subscribe(presenter)
+    fun unsubscribe() = player.unsubscribe()
 }

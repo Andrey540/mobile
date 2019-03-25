@@ -24,7 +24,6 @@ class PlaylistActivity : AppCompatActivity() {
         setContentView(R.layout.activity_playlist)
 
         val viewModel = ViewModelProviders.of(this).get(PlaylistViewModel::class.java)
-
         viewModel.trackTitle.observe(this, Observer { newTitle: String? ->
             updateTitleView(newTitle.orEmpty())
         })
@@ -48,6 +47,13 @@ class PlaylistActivity : AppCompatActivity() {
         val viewModel = ViewModelProviders.of(this).get(PlaylistViewModel::class.java)
         mPlayerListPresenter.subscribe(viewModel)
         mPlayerPresenter.subscribe(viewModel)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        mPlayerListPresenter.unsubscribe()
+        mPlayerPresenter.unsubscribe()
     }
 
     private fun initIntroView() {

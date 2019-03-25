@@ -24,7 +24,6 @@ class PlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_player)
 
         val viewModel = ViewModelProviders.of(this).get(PlayerViewModel::class.java)
-
         viewModel.trackTitle.observe(this, Observer { newTitle: String? ->
             updateTitleView(newTitle.orEmpty())
         })
@@ -53,6 +52,12 @@ class PlayerActivity : AppCompatActivity() {
 
         val viewModel = ViewModelProviders.of(this).get(PlayerViewModel::class.java)
         mPlayerPresenter.subscribe(viewModel)
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        mPlayerPresenter.unsubscribe()
     }
 
     private fun initButtons() {
