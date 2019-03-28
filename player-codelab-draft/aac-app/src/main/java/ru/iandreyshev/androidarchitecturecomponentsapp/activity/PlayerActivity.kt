@@ -9,55 +9,46 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_player.*
 import ru.iandreyshev.androidarchitecturecomponentsapp.R
 import ru.iandreyshev.androidarchitecturecomponentsapp.application.MusicApplication
+import ru.iandreyshev.androidarchitecturecomponentsapp.injection.ViewModelInjector
+import ru.iandreyshev.androidarchitecturecomponentsapp.view.IPlayerViewModel
 import ru.iandreyshev.androidarchitecturecomponentsapp.view.PlayerViewModel
+import ru.iandreyshev.androidarchitecturecomponentsapp.view.TimelineViewModel
 import ru.iandreyshev.model.player.PlayingState
-import ru.iandreyshev.model.player.Timeline
 import ru.iandreyshev.utils.disable
 import ru.iandreyshev.utils.enable
-import ru.iandreyshev.utils.toHumanReadableTime
 
 class PlayerActivity : AppCompatActivity() {
     private val mPlayerPresenter = MusicApplication.getPlayerPresenter()
+    private lateinit var mViewModel: PlayerViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
 
-        val viewModel = ViewModelProviders.of(this).get(PlayerViewModel::class.java)
-        viewModel.trackTitle.observe(this, Observer { newTitle: String? ->
+        initButtons()
+        initTimeline()
+        initViewModel()
+    }
+
+    private fun initViewModel() {
+        mViewModel = ViewModelInjector.getPlayerViewModel(this)
+
+        mViewModel.trackTitle.observe(this, Observer { newTitle: String? ->
             updateTitleView(newTitle.orEmpty())
         })
-        viewModel.trackPosterUrl.observe(this, Observer { newPoster: String? ->
+        mViewModel.trackPosterUrl.observe(this, Observer { newPoster: String? ->
             updatePosterView(newPoster.orEmpty())
         })
-        viewModel.trackTimeline.observe(this, Observer { newTimeline: Timeline? ->
+        mViewModel.trackTimeline.observe(this, Observer { newTimeline: TimelineViewModel? ->
             if (newTimeline !== null) {
-                val time = newTimeline.timeInMillis.toString()
-                val progress = newTimeline.percent
-                updateTimelineView(progress, time)
+                updateTimelineView(newTimeline.percent, newTimeline.time)
             }
         })
-        viewModel.playingState.observe(this, Observer { newState: PlayingState? ->
+        mViewModel.playingState.observe(this, Observer { newState: PlayingState? ->
             if (newState !== null) {
                 updatePlayingButtons(newState)
             }
         })
-
-        initButtons()
-        initTimeline()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        val viewModel = ViewModelProviders.of(this).get(PlayerViewModel::class.java)
-        mPlayerPresenter.subscribe(viewModel)
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        mPlayerPresenter.unsubscribe()
     }
 
     private fun initButtons() {
@@ -101,7 +92,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun updateTimelineView(progress: Float, currentTime: String) {
-        tvTime.text = currentTime.toInt().toHumanReadableTime()
+        tvTime.text = currentTime
         sbTimeLine.progress = (TIMELINE_MAX * progress).toInt()
     }
 

@@ -1,7 +1,6 @@
 package ru.iandreyshev.androidarchitecturecomponentsapp.activity
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -9,6 +8,7 @@ import kotlinx.android.synthetic.main.activity_player.view.*
 import kotlinx.android.synthetic.main.activity_playlist.*
 import ru.iandreyshev.androidarchitecturecomponentsapp.R
 import ru.iandreyshev.androidarchitecturecomponentsapp.application.MusicApplication
+import ru.iandreyshev.androidarchitecturecomponentsapp.injection.ViewModelInjector
 import ru.iandreyshev.androidarchitecturecomponentsapp.view.PlaylistViewModel
 import ru.iandreyshev.model.player.PlayingState
 import ru.iandreyshev.model.playlist.ITrack
@@ -17,43 +17,32 @@ import ru.iandreyshev.utils.enable
 
 class PlaylistActivity : AppCompatActivity() {
     private val mPlayerPresenter = MusicApplication.getPlayerPresenter()
-    private val mPlayerListPresenter = MusicApplication.getPlaylistPresenter()
+    private lateinit var mViewModel: PlaylistViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playlist)
 
-        val viewModel = ViewModelProviders.of(this).get(PlaylistViewModel::class.java)
-        viewModel.trackTitle.observe(this, Observer { newTitle: String? ->
+        initIntroView()
+        initViewModel()
+    }
+
+    private fun initViewModel() {
+        mViewModel = ViewModelInjector.getPlaylistViewModel(this)
+
+        mViewModel.trackTitle.observe(this, Observer { newTitle: String? ->
             updateTitleView(newTitle.orEmpty())
         })
-        viewModel.playingState.observe(this, Observer { newState: PlayingState? ->
+        mViewModel.playingState.observe(this, Observer { newState: PlayingState? ->
             if (newState !== null) {
                 updatePlayingButtons(newState)
             }
         })
-        viewModel.playList.observe(this, Observer { playList: List<ITrack>? ->
+        mViewModel.playList.observe(this, Observer { playList: List<ITrack>? ->
             if (playList !== null) {
                 updatePlayListView(playList)
             }
         })
-
-        initIntroView()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        val viewModel = ViewModelProviders.of(this).get(PlaylistViewModel::class.java)
-        mPlayerListPresenter.subscribe(viewModel)
-        mPlayerPresenter.subscribe(viewModel)
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        mPlayerListPresenter.unsubscribe()
-        mPlayerPresenter.unsubscribe()
     }
 
     private fun initIntroView() {

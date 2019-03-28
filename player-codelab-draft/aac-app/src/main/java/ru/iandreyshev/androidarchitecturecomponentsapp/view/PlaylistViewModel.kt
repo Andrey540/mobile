@@ -2,17 +2,21 @@ package ru.iandreyshev.androidarchitecturecomponentsapp.view
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import ru.iandreyshev.model.player.IPlayerPresenter
+import ru.iandreyshev.androidarchitecturecomponentsapp.presenter.PlayerPresenter
+import ru.iandreyshev.androidarchitecturecomponentsapp.presenter.PlaylistPresenter
 import ru.iandreyshev.model.player.PlayingState
 import ru.iandreyshev.model.player.Timeline
-import ru.iandreyshev.model.playlist.IPlaylistPresenter
 import ru.iandreyshev.model.playlist.ITrack
+import ru.iandreyshev.utils.toHumanReadableTime
 
-class PlaylistViewModel : ViewModel(), IPlayerPresenter, IPlaylistPresenter {
+class PlaylistViewModel(
+    private val playerPresenter: PlayerPresenter,
+    private val playlistPresenter: PlaylistPresenter
+) : ViewModel(), IPlayerViewModel, IPlaylistViewModel {
 
     val trackTitle = MutableLiveData<String>()
     val trackPosterUrl = MutableLiveData<String>()
-    val trackTimeline = MutableLiveData<Timeline>()
+    val trackTimeline = MutableLiveData<TimelineViewModel>()
     val playingState = MutableLiveData<PlayingState>()
     val playList = MutableLiveData<List<ITrack>>()
 
@@ -25,7 +29,7 @@ class PlaylistViewModel : ViewModel(), IPlayerPresenter, IPlaylistPresenter {
     }
 
     override fun updateTimeline(timeline: Timeline) {
-        trackTimeline.value = timeline
+        trackTimeline.value = TimelineViewModel(timeline.timeInMillis.toHumanReadableTime(), timeline.percent)
     }
 
     override fun updatePlaying(state: PlayingState) {
@@ -34,5 +38,10 @@ class PlaylistViewModel : ViewModel(), IPlayerPresenter, IPlaylistPresenter {
 
     override fun updatePlaylist(playlist: List<ITrack>) {
         playList.value = playlist
+    }
+
+    override fun onCleared() {
+        playerPresenter.unsubscribe(this)
+        playlistPresenter.unsubscribe(this)
     }
 }

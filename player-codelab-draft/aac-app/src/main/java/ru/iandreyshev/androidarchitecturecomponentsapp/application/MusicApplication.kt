@@ -20,7 +20,10 @@ class MusicApplication : Application() {
         instance = this
 
         mPlayerPresenter = PlayerPresenter(instance.mPlayer)
-        mPlayListPresenter = PlaylistPresenter(instance.mPlaylist)
+        mPlayListPresenter = PlaylistPresenter()
+
+        instance.mPlayer.subscribe(instance.mPlayerPresenter)
+        instance.mPlaylist.subscribe(mPlayListPresenter)
     }
 
     private fun onSelectSong(songId: Long) {
