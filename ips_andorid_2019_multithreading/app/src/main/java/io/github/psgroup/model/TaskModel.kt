@@ -38,6 +38,10 @@ class TaskModel {
         mPresenter?.update(mProgress)
     }
 
+    fun isReadyToRun(): Boolean {
+        return if (mTask !== null) (mTask!!.status === AsyncTask.Status.FINISHED) else true
+    }
+
     inner class Task : AsyncTask<Int, Int, Int>() {
         override fun onPreExecute() {
             super.onPreExecute()

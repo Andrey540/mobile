@@ -10,7 +10,9 @@ class MultiThreadTaskModel {
         if (!mTaskMap.contains(id)) {
             mTaskMap[id] = TaskModel()
         }
-        mTaskMap[id]?.start(executor, presenter)
+        if (mTaskMap[id]!!.isReadyToRun()) {
+            mTaskMap[id]!!.start(executor, presenter)
+        }
     }
 
     fun subscribe(id: String, presenter: TaskModel.IPresenter) {
