@@ -24,7 +24,7 @@ class Migration : RealmMigration {
         private Long? scheduledTime
          ************************************************/
         // Migrate from version 0 to version 1
-        if (oldVersion == (0).toLong()) {
+        if (oldVersion <= (0).toLong()) {
             val taskSchema = schema.create(Task.SCHEMA)
 
             taskSchema.addField(Task.ID_FIELD, String::class.java, FieldAttribute.PRIMARY_KEY)

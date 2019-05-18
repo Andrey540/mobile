@@ -48,6 +48,7 @@ class TaskSchedulerApplication : Application() {
             .migration(Migration())
             .schemaVersion(MIGRATION_VERSION)
             .build()
+        Realm.migrateRealm(realmConfig)
         Realm.setDefaultConfiguration(realmConfig)
         mRealm = DynamicRealm.getInstance(realmConfig)
 
@@ -58,7 +59,7 @@ class TaskSchedulerApplication : Application() {
         val notificationOffset: Long = 150 * 60000
         calendar.add(Calendar.MILLISECOND, notificationOffset.toInt() + 60000)
 
-        transaction.begin()
+       /* transaction.begin()
         repository.addTask(
             Task(
                 repository.nextId(),
@@ -142,7 +143,7 @@ class TaskSchedulerApplication : Application() {
                 notificationOffset
             )
         )
-        transaction.commit()
+        transaction.commit()*/
 
         val eventDispatcher = EventDispatcher.instance
         instance = this
