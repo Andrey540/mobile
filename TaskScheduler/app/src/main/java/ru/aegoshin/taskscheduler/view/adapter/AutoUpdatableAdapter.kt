@@ -3,6 +3,7 @@ package ru.aegoshin.taskscheduler.view.adapter
 import android.support.v7.util.DiffUtil
 import android.support.v7.util.ListUpdateCallback
 import android.support.v7.widget.RecyclerView
+import ru.aegoshin.infrastructure.task.TaskStatus
 
 interface AutoUpdatableAdapter {
 
@@ -14,7 +15,7 @@ interface AutoUpdatableAdapter {
             }
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return old[oldItemPosition] === new[newItemPosition]
+                return old[oldItemPosition] == new[newItemPosition]
             }
 
             override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {

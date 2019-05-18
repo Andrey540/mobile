@@ -14,7 +14,7 @@
             android:id="@+id/selectTask"
             app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="12dp" android:layout_marginBottom="11dp"
             app:buttonTint="@color/colorPrimary"
-            app:layout_constraintBottom_toTopOf="@+id/divider2" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/listDivider" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="8dp"/>
     <TextView
             android:id="@+id/taskViewTitle"
@@ -44,7 +44,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginEnd="8dp"/>
     <View
-            android:id="@+id/divider2"
+            android:id="@+id/listDivider"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:background="?android:attr/listDivider"

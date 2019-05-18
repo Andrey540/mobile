@@ -56,6 +56,8 @@
                 android:layout_height="400dp"
                 android:layout_margin="12dp"
         />
+
+
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -92,8 +94,6 @@
                     tools:ignore="VectorDrawableCompat"/>
 
         </LinearLayout>
-
-
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,6 +103,19 @@
                 android:layout_gravity="bottom" android:gravity="end">
 
 
+            <TextView
+                    android:id="@+id/txtCancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="@string/slycalendar_cancel"
+                    android:textAllCaps="true"
+                    android:gravity="center"
+                    android:paddingLeft="12dp"
+                    android:paddingRight="12dp"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:textColor="@color/slycalendar_defActionTextColor"
+                    android:fontFamily="sans-serif-medium"
+            />
             <TextView
                     android:id="@+id/txtSave"
                     android:layout_width="wrap_content"
@@ -116,19 +129,6 @@
                     android:textColor="@color/slycalendar_defActionTextColor"
                     android:fontFamily="sans-serif-medium"
 
-            />
-            <TextView
-                    android:id="@+id/txtCancel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="@string/slycalendar_cancel"
-                    android:textAllCaps="true"
-                    android:gravity="center"
-                    android:paddingLeft="12dp"
-                    android:paddingRight="12dp"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:textColor="@color/slycalendar_defActionTextColor"
-                    android:fontFamily="sans-serif-medium"
             />
 
         </LinearLayout>

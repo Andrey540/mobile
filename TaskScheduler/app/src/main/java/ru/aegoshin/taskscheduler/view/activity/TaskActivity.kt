@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.widget.DatePicker
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.TimePicker
@@ -13,6 +16,7 @@ import ru.aegoshin.infrastructure.task.TaskData
 import ru.aegoshin.infrastructure.task.TaskStatus
 import ru.aegoshin.taskscheduler.R
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
+import ru.aegoshin.taskscheduler.view.dialog.SelectTaskListDialog
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +32,7 @@ class TaskActivity : LocaliseActivity() {
     private var mCalendar = Calendar.getInstance()
     private var mTaskId: String? = null
     private var mDate: Long? = null
+    private var mMenu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,23 +57,45 @@ class TaskActivity : LocaliseActivity() {
         initDateComponent()
         initTimeComponent()
         initEnableNotificationCheckBox()
-        initNotifyBeforeTimeText()
+        initNotificationOffsetTimeText()
         initSaveButton()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.task_menu, menu)
+        mMenu = menu
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.select_unscheduled_task).setVisible(mTaskId == null)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.select_unscheduled_task -> {
+                SelectTaskListDialog()
+                .setCallback(getOnTaskSelectedCallback())
+                .show(supportFragmentManager, "unscheduled_task_list")
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun initViewFields(taskData: TaskData?) {
-        notifyBeforeTimeText.setText(String.format(TIME_FORMAT, 0, 0))
+        notificationOffsetTimeText.setText(String.format(TIME_FORMAT, 0, 0))
 
         if (taskData != null) {
             taskNameText.setText(taskData.title)
             taskDescriptionText.setText(taskData.description)
             mDate = taskData.scheduledTime
-            enableNotificationCheckBox.isChecked = taskData.needNotify
-            val notifyTime = taskData.notifyBefore / 60000
+            enableNotificationCheckBox.isChecked = taskData.isNotificationEnabled
+            val notifyTime = taskData.notificationOffset / 60000
             val notifyMinutes = notifyTime % 60
             val notifyHours = notifyTime / 60
             val text = String.format(TIME_FORMAT, notifyHours, notifyMinutes)
-            notifyBeforeTimeText.setText(text)
+            notificationOffsetTimeText.setText(text)
             isCompletedCheckBox.isChecked = taskData.status == TaskStatus.Completed
         }
 
@@ -92,9 +119,12 @@ class TaskActivity : LocaliseActivity() {
                     mDate,
                     getStatus(),
                     enableNotificationCheckBox.isChecked,
-                    (getNotifyBeforeTime() * 60000).toLong()
+                    (getNotificationOffset() * 60000).toLong()
                 )
                 if (mTaskId != null) mTaskService.updateTask(mTaskId!!, taskData) else mTaskService.addTask(taskData)
+                if (isTaskRoot) {
+                    startActivity(Intent(this, TaskListActivity::class.java))
+                }
                 finish()
             }
         }
@@ -150,23 +180,38 @@ class TaskActivity : LocaliseActivity() {
         }
     }
 
-    private fun initEnableNotificationCheckBox() {
-        enableNotificationCheckBox.setOnCheckedChangeListener{_, _ ->
-            updateNotifyBeforeAvailability()
+    private fun getOnTaskSelectedCallback(): SelectTaskListDialog.Callback {
+        return object : SelectTaskListDialog.Callback {
+            override fun onCancelled() {}
+
+            override fun onTaskSelected(taskId: String) {
+                mMenu?.findItem(R.id.select_unscheduled_task)!!.setVisible(false)
+                mTaskId = taskId
+                val taskData = mTaskDataProvider.findTaskDataById(mTaskId!!)
+                taskData ?: throw IllegalArgumentException("Cannot find task data by id: $mTaskId")
+                initViewFields(taskData)
+                mDate = mCalendar.time.time
+            }
         }
     }
 
-    private fun initNotifyBeforeTimeText() {
-        updateNotifyBeforeAvailability()
+    private fun initEnableNotificationCheckBox() {
+        enableNotificationCheckBox.setOnCheckedChangeListener{_, _ ->
+            updateNotificationOffsetAvailability()
+        }
+    }
+
+    private fun initNotificationOffsetTimeText() {
+        updateNotificationOffsetAvailability()
 
         val timeSetListener = object : TimePickerDialog.OnTimeSetListener {
             override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
                 val text = String.format(TIME_FORMAT, hourOfDay, minute)
-                notifyBeforeTimeText.setText(text)
+                notificationOffsetTimeText.setText(text)
             }
         }
-        notifyBeforeTimeText.setOnClickListener {
-            val time = getNotifyBeforeTime()
+        notificationOffsetTimeText.setOnClickListener {
+            val time = getNotificationOffset()
             val hours = time / 60
             val minutes = time % 60
             TimePickerDialog(
@@ -179,9 +224,9 @@ class TaskActivity : LocaliseActivity() {
         }
     }
 
-    private fun updateNotifyBeforeAvailability() {
-        notifyBeforeLabel.isEnabled = enableNotificationCheckBox.isChecked
-        notifyBeforeTimeText.isEnabled = enableNotificationCheckBox.isChecked
+    private fun updateNotificationOffsetAvailability() {
+        notificationOffsetLabel.isEnabled = enableNotificationCheckBox.isChecked
+        notificationOffsetTimeText.isEnabled = enableNotificationCheckBox.isChecked
     }
 
     private fun updateDateView() {
@@ -199,9 +244,9 @@ class TaskActivity : LocaliseActivity() {
         return if (mDate != null) TaskStatus.Scheduled else TaskStatus.Unscheduled
     }
 
-    private fun getNotifyBeforeTime(): Int {
+    private fun getNotificationOffset(): Int {
         val formatter = SimpleDateFormat("hh:mm", Locale.getDefault())
-        val date = formatter.parse(notifyBeforeTimeText.text.toString())
+        val date = formatter.parse(notificationOffsetTimeText.text.toString())
         mCalendar.timeInMillis = date.time
         return mCalendar.get(Calendar.MINUTE) + mCalendar.get(Calendar.HOUR_OF_DAY) * 60
     }

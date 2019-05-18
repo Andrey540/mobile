@@ -9,8 +9,8 @@ interface ITaskService {
         description: String,
         scheduledTime: Long?,
         status: TaskStatus,
-        needNotify: Boolean,
-        notifyBefore: Long
+        isNotificationEnabled: Boolean,
+        notificationOffset: Long
     )
     fun updateTask(
         taskId: TaskId,
@@ -18,8 +18,8 @@ interface ITaskService {
         description: String,
         scheduledTime: Long?,
         status: TaskStatus,
-        needNotify: Boolean,
-        notifyBefore: Long
+        isNotificationEnabled: Boolean,
+        notificationOffset: Long
     )
     fun removeTasks(taskIds: List<TaskId>)
     fun changeTasksStatusToCompleted(taskIds: List<TaskId>)

@@ -4,7 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
-import ru.aegoshin.taskscheduler.view.notification.TaskNotification
+import ru.aegoshin.taskscheduler.view.factory.NotificationFactory
+import ru.aegoshin.taskscheduler.view.publisher.NotificationPublisher
 import java.util.*
 
 class TaskNotificationReceiver : BroadcastReceiver() {
@@ -17,6 +18,9 @@ class TaskNotificationReceiver : BroadcastReceiver() {
         val to = calendar.timeInMillis
 
         val tasks = mTaskDataProvider.findNotifiableTasksByInterval(from, to)
-        tasks.forEachIndexed { index, it -> TaskNotification.notify(context, it, index) }
+        tasks.forEachIndexed { index, it ->
+            val notification = NotificationFactory.createTaskNotification(context, it, index)
+            NotificationPublisher.publish(context, notification, index)
+         }
     }
 }

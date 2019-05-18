@@ -1,14 +1,14 @@
 package ru.aegoshin.domain.model.event
 
-import ru.aegoshin.domain.model.task.Task
+import ru.aegoshin.domain.model.task.TaskId
 
-class TaskAddedEvent(private val task: Task) : IDomainEvent {
+class TaskAddedEvent(private val taskId: TaskId) : IDomainEvent {
     override fun getType(): String {
         return TYPE
     }
 
-    fun getTask(): Task {
-        return task
+    fun getTaskId(): TaskId {
+        return taskId
     }
 
     companion object {

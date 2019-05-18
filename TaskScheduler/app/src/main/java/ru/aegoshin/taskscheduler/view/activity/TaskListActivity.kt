@@ -1,55 +1,48 @@
 package ru.aegoshin.taskscheduler.view.activity
 
-import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
-import android.support.v7.widget.LinearLayoutManager
-import android.app.NotificationManager
-import android.app.NotificationChannel
+import android.support.v4.app.Fragment
 
-import kotlinx.android.synthetic.main.activity_task_list.*
 import kotlinx.android.synthetic.main.bottom_navigation.*
-import kotlinx.android.synthetic.main.content_task_list.*
+import kotlinx.android.synthetic.main.activity_task_list.*
 import ru.aegoshin.taskscheduler.R
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
-import ru.aegoshin.taskscheduler.application.injection.ViewModelInjector
-import ru.aegoshin.taskscheduler.view.adapter.TaskListViewRecyclerAdapter
-import ru.aegoshin.taskscheduler.view.model.TaskListViewModel
 import android.view.Menu
 import android.view.MenuItem
+import android.support.v7.widget.SearchView
 import ru.aegoshin.daterangecalendar.DateRangeCalendarDialog
-import ru.aegoshin.taskscheduler.view.listener.OnSwipeTouchListener
+import ru.aegoshin.taskscheduler.view.fragment.UnscheduledTaskListFragment
+import ru.aegoshin.taskscheduler.view.fragment.ITaskListFragment
 import ru.aegoshin.taskscheduler.view.model.DateIntervalViewModel
 import ru.aegoshin.taskscheduler.view.model.TaskViewModel
-import java.text.SimpleDateFormat
 import java.util.*
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.os.Build
-import ru.aegoshin.taskscheduler.application.receiver.TaskNotificationReceiver
+import ru.aegoshin.taskscheduler.view.fragment.ScheduledTaskListFragment
 
+class TaskListActivity : LocaliseActivity(), ScheduledTaskListFragment.OnScheduledTaskListFragmentInteractionListener,
+    UnscheduledTaskListFragment.OnUnscheduledTaskListFragmentInteractionListener {
+    companion object {
+        private const val FRAGMENT = "fragment"
+    }
 
-class TaskListActivity : LocaliseActivity() {
-    private val mTaskListPresenter = TaskSchedulerApplication.getTaskListPresenter()
     private val mTaskService = TaskSchedulerApplication.getTaskService()
-    private lateinit var linearLayoutManager: LinearLayoutManager
-    private lateinit var mTaskListAdapter: TaskListViewRecyclerAdapter
-    private lateinit var mViewModel: TaskListViewModel
+    private var mActiveListFragment: ITaskListFragment? = null
+    private val mScheduledTaskListFragment = ScheduledTaskListFragment()
+    private val mUnscheduledTaskListFragment = UnscheduledTaskListFragment()
+    private val mFragments = listOf<ITaskListFragment>(mScheduledTaskListFragment, mUnscheduledTaskListFragment)
+    private var mMenu: Menu? = null
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
                 supportActionBar!!.title = getString(R.string.title_home)
+                switchToFragment(mScheduledTaskListFragment)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_dashboard -> {
-                supportActionBar!!.title = getString(R.string.title_dashboard)
-                return@OnNavigationItemSelectedListener true
-            }
-            R.id.navigation_notifications -> {
-                supportActionBar!!.title = getString(R.string.title_notifications)
+                supportActionBar!!.title = getString(R.string.title_backlog)
+                switchToFragment(mUnscheduledTaskListFragment)
                 return@OnNavigationItemSelectedListener true
             }
         }
@@ -67,40 +60,44 @@ class TaskListActivity : LocaliseActivity() {
             intent.putExtra(TaskActivity.DATE, Calendar.getInstance().timeInMillis)
             startActivity(intent)
         }
-        currentDateView.setOnClickListener { onChangeDate() }
+
+        val ft = supportFragmentManager.beginTransaction()
+        ft.add(R.id.task_list, mScheduledTaskListFragment)
+        ft.commit()
+        mActiveListFragment = mScheduledTaskListFragment
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+    }
 
-        val swipeTouchListener = getSwipeTouchListener()
-        taskList.setOnTouchListener(swipeTouchListener)
-        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> taskListItemClicked(task) }, swipeTouchListener)
-        linearLayoutManager = LinearLayoutManager(this)
-        taskList.layoutManager = linearLayoutManager
-        taskList.adapter = mTaskListAdapter
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.run {
+            putInt(FRAGMENT, mFragments.indexOf(mActiveListFragment))
+        }
+        super.onSaveInstanceState(outState)
+    }
 
-        mViewModel = ViewModelInjector.getTaskListViewModel(this)
-        mViewModel.taskList.observe(this, Observer { taskList: List<TaskViewModel>? ->
-            if (taskList !== null) {
-                mTaskListAdapter.updateItems(taskList.toList())
-            }
-        })
-        mViewModel.dateInterval.observe(this, Observer { dateInterval: DateIntervalViewModel? ->
-            if (dateInterval !== null) {
-                updateDateIntervalView(dateInterval)
-            }
-        })
-        if (mViewModel.dateInterval.value == null) {
-            initStartDateInterval()
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        val fragmentIndex = savedInstanceState?.getInt(FRAGMENT)
+        if (fragmentIndex != null) {
+            switchToFragment(mFragments[fragmentIndex])
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.task_list_menu, menu)
+        menuInflater.inflate(R.menu.search, menu)
+
+        mMenu = menu
+
+        val searchView = menu.findItem(R.id.search).actionView as SearchView
+        searchView.setOnQueryTextListener(getSearchListener())
         return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val notEmptySelection = mViewModel.getSelectedIds().isNotEmpty()
+        val notEmptySelection = mActiveListFragment!!.getSelectedIds().isNotEmpty()
         menu.findItem(R.id.task_list_item_remove).setVisible(notEmptySelection)
         menu.findItem(R.id.task_list_item_mark_as_completed).setVisible(notEmptySelection)
         menu.findItem(R.id.task_list_item_mark_as_uncompleted).setVisible(notEmptySelection)
@@ -111,61 +108,34 @@ class TaskListActivity : LocaliseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.task_list_item_remove -> {
-                mTaskService.removeTasks(mViewModel.getSelectedIds())
-                return true
-            }
-            R.id.task_list_change_date -> {
-                onChangeDate()
-                return true
+                mTaskService.removeTasks(mActiveListFragment!!.getSelectedIds())
             }
             R.id.task_list_item_mark_as_completed -> {
-                mTaskService.changeTasksStatusToCompleted(mViewModel.getSelectedIds())
-                return true
+                mTaskService.changeTasksStatusToCompleted(mActiveListFragment!!.getSelectedIds())
             }
             R.id.task_list_item_mark_as_uncompleted -> {
-                mTaskService.changeTasksStatusToUncompleted(mViewModel.getSelectedIds())
-                return true
+                mTaskService.changeTasksStatusToUncompleted(mActiveListFragment!!.getSelectedIds())
             }
             R.id.task_list_select_all -> {
-                mTaskListAdapter.selectAll()
-                return true
+                mActiveListFragment!!.selectAllItems()
             }
             R.id.task_list_unselect_all -> {
-                mTaskListAdapter.unSelectAll()
-                return true
+                mActiveListFragment!!.unSelectAllItems()
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun getSwipeTouchListener(): OnSwipeTouchListener {
-        return object : OnSwipeTouchListener(this) {
-            override fun onSwipeLeft() {
-                val interval = mViewModel.dateInterval.value!!
-                updateDate(shiftDateInterval(interval, getDateIntervalDiff(interval)))
-            }
-
-            override fun onSwipeRight() {
-                val interval = mViewModel.dateInterval.value!!
-                updateDate(shiftDateInterval(interval, -getDateIntervalDiff(interval)))
-            }
-        }
+    override fun onShowDateRangeCalendar(from: Long, to: Long) {
+        DateRangeCalendarDialog()
+            .setSingle(false)
+            .setCallback(getOnDateChangedCallback())
+            .setStartDate(Date(from))
+            .setEndDate(Date(to))
+            .show(supportFragmentManager, "date_range_fragment")
     }
 
-    private fun shiftDateInterval(dateInterval: DateIntervalViewModel, amount: Int): DateIntervalViewModel {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = dateInterval.from
-        calendar.add(Calendar.DATE, amount)
-
-        val from = calendar.timeInMillis
-
-        calendar.timeInMillis = dateInterval.to
-        calendar.add(Calendar.DATE, amount)
-
-        return DateIntervalViewModel(from, calendar.timeInMillis)
-    }
-
-    private fun taskListItemClicked(task: TaskViewModel) {
+    override fun onEditTaskListItem(task: TaskViewModel) {
         val intent = Intent(this, TaskActivity::class.java)
         intent.putExtra(TaskActivity.TASK_ID, task.id)
         startActivity(intent)
@@ -197,38 +167,42 @@ class TaskListActivity : LocaliseActivity() {
         }
     }
 
-    private fun initStartDateInterval() {
-        val calendar = Calendar.getInstance()
-        val from = getDayFromDate(calendar.timeInMillis)
-        calendar.timeInMillis = from
-        calendar.add(Calendar.DATE, 1)
-        calendar.add(Calendar.MINUTE, -1)
-        updateDate(DateIntervalViewModel(from, calendar.timeInMillis))
-    }
+    private fun getSearchListener(): SearchView.OnQueryTextListener {
+        return object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
 
-    private fun onChangeDate() {
-        val dialog = DateRangeCalendarDialog()
-            .setSingle(false)
-            .setCallback(getOnDateChangedCallback())
-            .setStartDate(Date(mViewModel.dateInterval.value!!.from))
-            .setEndDate(Date(mViewModel.dateInterval.value!!.to))
-        dialog.show(supportFragmentManager, "fragment_alert")
+            override fun onQueryTextChange(newText: String): Boolean {
+                mActiveListFragment?.searchTasks(newText)
+                return true
+            }
+        }
     }
 
     private fun updateDate(dateInterval: DateIntervalViewModel) {
-        mViewModel.dateInterval.value = dateInterval
-        mTaskListPresenter.updateDateInterval(dateInterval.from, dateInterval.to)
+        if (mActiveListFragment is ScheduledTaskListFragment) {
+            (mActiveListFragment as ScheduledTaskListFragment).updateDateInterval(dateInterval)
+        }
     }
 
-    private fun updateDateIntervalView(dateInterval: DateIntervalViewModel) {
-        var text = SimpleDateFormat("d MMMM", Locale.getDefault()).format(Date(dateInterval.from))
-
-        val fromDay = getDayFromDate(dateInterval.from)
-        val toDay = getDayFromDate(dateInterval.to)
-        if (fromDay != toDay) {
-            text += SimpleDateFormat(" - d MMMM", Locale.getDefault()).format(Date(dateInterval.to))
+    private fun resetSearch() {
+        if (mMenu != null) {
+            val suggestWord = intent.dataString
+            val menuItem = mMenu!!.findItem(R.id.search)
+            val searchView = menuItem.actionView as SearchView
+            searchView.setQuery(suggestWord, false)
+            searchView.clearFocus()
+            menuItem.collapseActionView()
         }
-        currentDateView.text = text
+    }
+
+    private fun switchToFragment(fragment: ITaskListFragment) {
+        resetSearch()
+        val ft = supportFragmentManager.beginTransaction()
+        ft.replace(R.id.task_list, fragment as Fragment)
+        mActiveListFragment = fragment
+        ft.commit()
     }
 
     private fun getDayFromDate(date: Long): Long {
@@ -239,15 +213,5 @@ class TaskListActivity : LocaliseActivity() {
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
-    }
-
-    private fun getDateIntervalDiff(dateInterval: DateIntervalViewModel): Int {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = dateInterval.from
-        val from = calendar.get(Calendar.DAY_OF_YEAR)
-
-        calendar.timeInMillis = dateInterval.to
-        val to = calendar.get(Calendar.DAY_OF_YEAR)
-        return to - from + 1
     }
 }

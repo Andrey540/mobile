@@ -125,6 +125,7 @@
             android:layout_height="wrap_content"
             android:horizontalSpacing="0dp"
             android:numColumns="7"
-            android:verticalSpacing="0dp"/>
+            android:verticalSpacing="0dp" style="@android:style/Widget.DeviceDefault.GridView"
+            android:textAlignment="center"/>
 
 </LinearLayout>

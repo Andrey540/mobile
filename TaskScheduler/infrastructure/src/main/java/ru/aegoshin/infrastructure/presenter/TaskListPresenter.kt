@@ -9,24 +9,31 @@ import ru.aegoshin.domain.model.task.TaskStatus as DomainTaskStatus
 import ru.aegoshin.infrastructure.task.TaskStatus
 import ru.aegoshin.infrastructure.list.ITaskList
 import ru.aegoshin.infrastructure.list.TaskList
-import ru.aegoshin.infrastructure.list.filter.DateRangeTaskListFilter
+import ru.aegoshin.infrastructure.list.filter.DateRangeFilter
+import ru.aegoshin.infrastructure.list.filter.TaskStatusFilter
+import ru.aegoshin.infrastructure.list.filter.TaskTitleFilter
+import java.lang.RuntimeException
 
 class TaskListPresenter(
     private val repository: IImmutableTaskRepository,
     private val list: TaskList,
-    private val eventDispatcher: IEventDispather
+    eventDispatcher: IEventDispather
 ) : ITaskListPresenter {
     private val mSubscribers = mutableListOf<ITaskList>()
     private val mTaskAddedEventHandler = TaskAddedEventHandler()
     private val mTasksRemovedEventHandler = TasksRemovedEventHandler()
     private val mTasksUpdatedEventHandler = TasksUpdatedEventHandler()
-    private val mDateRangeFilter = DateRangeTaskListFilter()
+    private val mDateRangeFilter = DateRangeFilter()
+    private val mStatusFilter = TaskStatusFilter()
+    private val mTitleFilter = TaskTitleFilter()
 
     init {
         eventDispatcher.subscribe(mTaskAddedEventHandler)
         eventDispatcher.subscribe(mTasksRemovedEventHandler)
         eventDispatcher.subscribe(mTasksUpdatedEventHandler)
         list.addFilter(mDateRangeFilter)
+        list.addFilter(mStatusFilter)
+        list.addFilter(mTitleFilter)
     }
 
     override fun subscribe(subscriber: ITaskList) {
@@ -43,10 +50,25 @@ class TaskListPresenter(
     override fun updateDateInterval(from: Long, to: Long) {
         list.updateList(convertTasks(repository.findByDateInterval(from, to)))
         mDateRangeFilter.updateDataRange(from, to)
-        updateList(list.getList())
+        updateListImpl(list.getList())
     }
 
-    private fun updateList(list: List<Task>) {
+    override fun updateStatuses(statuses: List<TaskStatus>?) {
+        mStatusFilter.updateStatuses(statuses)
+        updateListImpl(list.getList())
+    }
+
+    override fun searchTasks(search: String?) {
+        mTitleFilter.updateTitle(search)
+        updateListImpl(list.getList())
+    }
+
+    fun updateList(taskList: List<IImmutableTask>) {
+        list.updateList(convertTasks(taskList))
+        updateListImpl(list.getList())
+    }
+
+    private fun updateListImpl(list: List<Task>) {
         mSubscribers.forEach {
             it.updateList(list)
         }
@@ -69,8 +91,8 @@ class TaskListPresenter(
             task.getDescription(),
             task.getScheduledTime(),
             TaskStatus.fromInt(task.getStatus().status),
-            task.getNeedNotify(),
-            task.getNotifyBefore()
+            task.isNotificationEnabled(),
+            task.getNotificationOffset()
         )
     }
 
@@ -84,8 +106,11 @@ class TaskListPresenter(
 
     inner class TaskAddedEventHandler : IDomainEventHandler {
         override fun handle(event: IDomainEvent) {
-            list.addTask(convertTask((event as TaskAddedEvent).getTask()))
-            updateList(list.getList())
+            val taskId = (event as TaskAddedEvent).getTaskId()
+            val task = repository.findTaskById(taskId)
+            task ?: throw RuntimeException("Cannot find task data by id: $taskId")
+            list.addTask(convertTask(task))
+            updateListImpl(list.getList())
         }
 
         override fun isSubscribedToEvent(event: IDomainEvent): Boolean {
@@ -96,7 +121,7 @@ class TaskListPresenter(
     inner class TasksRemovedEventHandler : IDomainEventHandler {
         override fun handle(event: IDomainEvent) {
             list.removeTasks(convertTaskIds((event as TasksRemovedEvent).getTaskIds()))
-            updateList(list.getList())
+            updateListImpl(list.getList())
         }
 
         override fun isSubscribedToEvent(event: IDomainEvent): Boolean {
@@ -106,8 +131,10 @@ class TaskListPresenter(
 
     inner class TasksUpdatedEventHandler : IDomainEventHandler {
         override fun handle(event: IDomainEvent) {
-            list.updateTasks(convertTasks((event as TasksUpdatedEvent).getTasks()))
-            updateList(list.getList())
+            val taskIds = (event as TasksUpdatedEvent).getTaskIds()
+            val tasks = repository.findTasksByIds(taskIds)
+            list.updateTasks(convertTasks(tasks))
+            updateListImpl(list.getList())
         }
 
         override fun isSubscribedToEvent(event: IDomainEvent): Boolean {

@@ -2,25 +2,37 @@ package ru.aegoshin.taskscheduler.application.injection
 
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
-import ru.aegoshin.taskscheduler.view.activity.TaskListActivity
+import android.support.v4.app.FragmentActivity
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
-import ru.aegoshin.taskscheduler.view.model.TaskListViewModel
+import ru.aegoshin.taskscheduler.view.model.UnscheduledTaskListViewModel
+import ru.aegoshin.taskscheduler.view.model.ScheduledTaskListViewModel
 
 object ViewModelInjector {
-    private val mTaskListPresenter = TaskSchedulerApplication.getTaskListPresenter()
+    private val mScheduledTaskListPresenter = TaskSchedulerApplication.getScheduledTaskListPresenter()
+    private val mUnscheduledTaskListPresenter = TaskSchedulerApplication.getUnscheduledTaskListPresenter()
 
-    fun getTaskListViewModel(activity: TaskListActivity): TaskListViewModel {
-        val provider = ViewModelProvider(activity, Factory)
-        val viewModel = provider[TaskListViewModel::class.java]
-        mTaskListPresenter.subscribe(viewModel)
+    fun getScheduledTaskListViewModel(fragmentActivity: FragmentActivity): ScheduledTaskListViewModel {
+        val provider = ViewModelProvider(fragmentActivity, Factory)
+        val viewModel = provider[ScheduledTaskListViewModel::class.java]
+        mScheduledTaskListPresenter.subscribe(viewModel)
+        return viewModel
+    }
+
+    fun getUnscheduledTaskListViewModel(fragmentActivity: FragmentActivity): UnscheduledTaskListViewModel {
+        val provider = ViewModelProvider(fragmentActivity, Factory)
+        val viewModel = provider[UnscheduledTaskListViewModel::class.java]
+        mUnscheduledTaskListPresenter.subscribe(viewModel)
         return viewModel
     }
 
     private object Factory: ViewModelProvider.Factory {
 
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            if (modelClass == TaskListViewModel::class.java) {
-                return TaskListViewModel(mTaskListPresenter) as T
+            if (modelClass == ScheduledTaskListViewModel::class.java) {
+                return ScheduledTaskListViewModel(mScheduledTaskListPresenter) as T
+            }
+            if (modelClass == UnscheduledTaskListViewModel::class.java) {
+                return UnscheduledTaskListViewModel(mUnscheduledTaskListPresenter) as T
             }
 
             throw IllegalArgumentException(

@@ -29,8 +29,8 @@ class TaskDataProvider(
             task.getDescription(),
             task.getScheduledTime(),
             TaskStatus.fromInt(task.getStatus().status),
-            task.getNeedNotify(),
-            task.getNotifyBefore()
+            task.isNotificationEnabled(),
+            task.getNotificationOffset()
         )
     }
 
@@ -41,8 +41,8 @@ class TaskDataProvider(
             task.getDescription(),
             task.getScheduledTime(),
             TaskStatus.fromInt(task.getStatus().status),
-            task.getNeedNotify(),
-            task.getNotifyBefore()
+            task.isNotificationEnabled(),
+            task.getNotificationOffset()
         )
     }
 }

@@ -5,5 +5,6 @@
     <color name="colorAccent">#D81B60</color>
     <color name="white">#FFFFFF</color>
     <color name="taskDone">#FDFEA9</color>
-    <color name="taskNotScheduled">#FFE1AB</color>
+    <color name="selectedTabColor">#F06800</color>
+    <color name="unselectedTabColor">#757575</color>
 </resources>

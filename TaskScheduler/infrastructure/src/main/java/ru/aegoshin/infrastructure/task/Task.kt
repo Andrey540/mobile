@@ -6,6 +6,6 @@ class Task (
     val description: String,
     val scheduledTime: Long?,
     val status: TaskStatus,
-    val needNotify: Boolean,
-    val notifyBefore: Long
+    val isNotificationEnabled: Boolean,
+    val notificationOffset: Long
 )

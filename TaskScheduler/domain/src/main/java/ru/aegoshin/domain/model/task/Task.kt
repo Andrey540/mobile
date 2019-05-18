@@ -1,13 +1,13 @@
 package ru.aegoshin.domain.model.task
 
-class Task(
+open class Task(
     private var id: TaskId,
     private var title: String,
     private var description: String,
     private var scheduledTime: Long?,
     private var status: TaskStatus,
-    private var needNotify: Boolean,
-    private var notifyBefore: Long
+    private var isNotificationEnabled: Boolean,
+    private var notificationOffset: Long
 ) : IImmutableTask {
     init {
         validateTitle(title)
@@ -34,44 +34,53 @@ class Task(
         return status
     }
 
-    override fun getNeedNotify(): Boolean {
-        return needNotify
+    override fun isNotificationEnabled(): Boolean {
+        return isNotificationEnabled
     }
 
-    override fun getNotifyBefore(): Long {
-        return notifyBefore
+    override fun getNotificationOffset(): Long {
+        return notificationOffset
     }
 
     fun setTitle(newTitle: String) {
         validateTitle(newTitle)
         title = newTitle
+        onUpdated()
     }
 
     fun setDescription(newDescription: String) {
         description = newDescription
+        onUpdated()
     }
 
     fun updateScheduledTimeAndStatus(newScheduledTime: Long?, newStatus: TaskStatus) {
         validateScheduledTimeAndStatus(newScheduledTime, newStatus)
         scheduledTime = newScheduledTime
         status = newStatus
+        onUpdated()
     }
 
-    fun setNeedNotify(newNeedNotify: Boolean) {
-        needNotify = newNeedNotify
+    fun setIsNotificationEnabled(enabled: Boolean) {
+        isNotificationEnabled = enabled
+        onUpdated()
     }
 
-    fun setNotifyBefore(newNotifyBefore: Long) {
-        notifyBefore = newNotifyBefore
+    fun setNotificationOffset(offset: Long) {
+        notificationOffset = offset
+        onUpdated()
     }
 
     fun setCompleted() {
         status = TaskStatus.Completed
+        onUpdated()
     }
 
     fun setUncompleted() {
         status = if (scheduledTime == null) TaskStatus.Unscheduled else TaskStatus.Scheduled
+        onUpdated()
     }
+
+    open fun onUpdated() {}
 
     private fun validateScheduledTimeAndStatus(scheduledTime: Long?, status: TaskStatus) {
         if (scheduledTime == null && status == TaskStatus.Scheduled) {

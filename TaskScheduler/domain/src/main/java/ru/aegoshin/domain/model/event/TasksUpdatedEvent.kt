@@ -1,14 +1,14 @@
 package ru.aegoshin.domain.model.event
 
-import ru.aegoshin.domain.model.task.IImmutableTask
+import ru.aegoshin.domain.model.task.TaskId
 
-class TasksUpdatedEvent(private val tasks: List<IImmutableTask>) : IDomainEvent {
+class TasksUpdatedEvent(private val taskIds: List<TaskId>) : IDomainEvent {
     override fun getType(): String {
         return TYPE
     }
 
-    fun getTasks(): List<IImmutableTask> {
-        return tasks
+    fun getTaskIds(): List<TaskId> {
+        return taskIds
     }
 
     companion object {

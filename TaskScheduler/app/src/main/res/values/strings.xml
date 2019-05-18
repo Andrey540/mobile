@@ -2,14 +2,12 @@
     <string name="app_name">Планировщик задач</string>
     <string name="title_activity_task_list">Список задач</string>
     <string name="title_home">Главная</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_backlog">Бэклог</string>
     <string name="task_list_item_remove">Удалить</string>
     <string name="task_list_item_mark_done">Пометить как завершённое</string>
     <string name="task_list_item_mark_unrealized">Пометить как незавершённое</string>
     <string name="task_list_select_all">Выделить всё</string>
     <string name="task_list_unselect_all">Снять выделение</string>
-    <string name="task_list_change_date">Сменить дату</string>
     <string name="task_name">Назчание задачи</string>
     <string name="task_description">Описание задачи</string>
     <string name="save">Сохранить</string>
@@ -21,4 +19,12 @@
     <string name="set_as_completed">Пометить как завершённое</string>
     <string name="task_name_is_required">Необходимо указать название задачи</string>
     <string name="at">в</string>
+    <string name="next_interval">Следующий</string>
+    <string name="prev_interval">Пердыдущий</string>
+    <string name="all_items">Все</string>
+    <string name="completed_items">Завершённые</string>
+    <string name="uncompleted_items">Незавершённые</string>
+    <string name="hint_search">Поиск</string>
+    <string name="select_unscheduled_task">Выбрать из бэклога</string>
+    <string name="cancel">Отмена</string>
 </resources>

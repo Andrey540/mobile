@@ -1,4 +1,4 @@
-package ru.aegoshin.infrastructure.repository
+package ru.aegoshin.infrastructure.repository.inmemory
 
 import ru.aegoshin.domain.model.repository.IImmutableTaskRepository
 import ru.aegoshin.domain.model.repository.ITaskRepository
@@ -8,7 +8,7 @@ import ru.aegoshin.domain.model.task.TaskId
 import ru.aegoshin.domain.model.task.TaskStatus
 import java.util.*
 
-class TaskInMemoryRepository : ITaskRepository, IImmutableTaskRepository {
+class TaskRepository : ITaskRepository, IImmutableTaskRepository {
     private val mTasks = mutableListOf<Task>()
 
     override fun nextId(): TaskId {
@@ -34,16 +34,20 @@ class TaskInMemoryRepository : ITaskRepository, IImmutableTaskRepository {
         return mTasks.find { it.getId().equalTo(taskId) }
     }
 
+    override fun findTasksByStatus(status: TaskStatus): List<Task> {
+        return mTasks.filter { it.getStatus() == status }
+    }
+
     override fun findByDateInterval(from: Long?, to: Long?): List<Task> {
         return mTasks.filter { isTaskInDateInterval(it, from, to) }
     }
 
     override fun findNotifiableTasksByInterval(from: Long, to: Long): List<IImmutableTask> {
         return mTasks.filter {
-            it.getNeedNotify() && (it.getStatus() == TaskStatus.Scheduled) && isTaskInDateInterval(
+            it.isNotificationEnabled() && (it.getStatus() == TaskStatus.Scheduled) && isTaskInDateInterval(
                 it,
-                from + it.getNotifyBefore(),
-                to + it.getNotifyBefore()
+                from + it.getNotificationOffset(),
+                to + it.getNotificationOffset()
             )
         }
     }

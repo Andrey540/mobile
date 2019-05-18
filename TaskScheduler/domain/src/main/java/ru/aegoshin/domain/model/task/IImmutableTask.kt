@@ -6,6 +6,6 @@ interface IImmutableTask {
     fun getDescription(): String
     fun getScheduledTime(): Long?
     fun getStatus(): TaskStatus
-    fun getNeedNotify(): Boolean
-    fun getNotifyBefore(): Long
+    fun isNotificationEnabled(): Boolean
+    fun getNotificationOffset(): Long
 }

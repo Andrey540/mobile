@@ -38,10 +38,9 @@ class TaskList : ITaskList {
                 mTasks[index] = newTask
             }
         }
-        /*  val taskIds = tasks.map { it.id }
-          val removingTasks = mTasks.filter { taskIds.indexOf(it.id) != -1 }
-          mTasks.removeAll(removingTasks)
-          mTasks.addAll(tasks)*/
+        val taskIds = mTasks.map { it.id }
+        val newTasks = tasks.filter { taskIds.indexOf(it.id) == -1 }
+        mTasks.addAll(newTasks)
     }
 
     private fun filterList(tasks: List<Task>): List<Task> {

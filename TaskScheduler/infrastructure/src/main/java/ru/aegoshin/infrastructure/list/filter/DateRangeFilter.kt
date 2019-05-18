@@ -3,7 +3,7 @@ package ru.aegoshin.infrastructure.list.filter
 import ru.aegoshin.infrastructure.task.Task
 import java.util.*
 
-class DateRangeTaskListFilter : ITaskListFilter {
+class DateRangeFilter : ITaskListFilter {
     private var mFrom: Long? = null
     private var mTo: Long? = null
 

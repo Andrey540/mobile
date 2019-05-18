@@ -19,12 +19,12 @@ class TaskService(
         description: String,
         scheduledTime: Long?,
         status: TaskStatus,
-        needNotify: Boolean,
-        notifyBefore: Long
+        isNotificationEnabled: Boolean,
+        notificationOffset: Long
     ) {
-        val task = Task(repository.nextId(), title, description, scheduledTime, status, needNotify, notifyBefore)
+        val task = Task(repository.nextId(), title, description, scheduledTime, status, isNotificationEnabled, notificationOffset)
         repository.addTask(task)
-        eventDispatcher.dispatch(TaskAddedEvent(task))
+        eventDispatcher.dispatch(TaskAddedEvent(task.getId()))
     }
 
     override fun updateTask(
@@ -33,17 +33,17 @@ class TaskService(
         description: String,
         scheduledTime: Long?,
         status: TaskStatus,
-        needNotify: Boolean,
-        notifyBefore: Long
+        isNotificationEnabled: Boolean,
+        notificationOffset: Long
     ) {
         val task = repository.findTaskById(taskId)
         task ?: throw TaskNotFoundException(taskId)
         task.setTitle(title)
         task.setDescription(description)
         task.updateScheduledTimeAndStatus(scheduledTime, status)
-        task.setNeedNotify(needNotify)
-        task.setNotifyBefore(notifyBefore)
-        eventDispatcher.dispatch(TasksUpdatedEvent(listOf(task)))
+        task.setIsNotificationEnabled(isNotificationEnabled)
+        task.setNotificationOffset(notificationOffset)
+        eventDispatcher.dispatch(TasksUpdatedEvent(listOf(task.getId())))
     }
 
     override fun removeTasks(taskIds: List<TaskId>) {
@@ -60,7 +60,7 @@ class TaskService(
         }
         val tasks = repository.findTasksByIds(taskIds)
         tasks.forEach { it.setCompleted() }
-        eventDispatcher.dispatch(TasksUpdatedEvent(tasks))
+        eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
     }
 
     override fun changeTasksStatusToUncompleted(taskIds: List<TaskId>) {
@@ -69,6 +69,6 @@ class TaskService(
         }
         val tasks = repository.findTasksByIds(taskIds)
         tasks.forEach { it.setUncompleted() }
-        eventDispatcher.dispatch(TasksUpdatedEvent(tasks))
+        eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
     }
 }
