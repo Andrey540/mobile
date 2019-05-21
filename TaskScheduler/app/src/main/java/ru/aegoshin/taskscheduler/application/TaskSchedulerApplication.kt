@@ -55,11 +55,11 @@ class TaskSchedulerApplication : Application() {
         val transaction = RealmTransaction(mRealm)
         val repository = TaskRealmRepository(mRealm)
 
-        val calendar = Calendar.getInstance()
+        /*val calendar = Calendar.getInstance()
         val notificationOffset: Long = 150 * 60000
         calendar.add(Calendar.MILLISECOND, notificationOffset.toInt() + 60000)
 
-       /* transaction.begin()
+        transaction.begin()
         repository.addTask(
             Task(
                 repository.nextId(),

@@ -43,6 +43,7 @@ class TaskService(
         task.updateScheduledTimeAndStatus(scheduledTime, status)
         task.setIsNotificationEnabled(isNotificationEnabled)
         task.setNotificationOffset(notificationOffset)
+        repository.updateTasks(listOf(task))
         eventDispatcher.dispatch(TasksUpdatedEvent(listOf(task.getId())))
     }
 
@@ -60,6 +61,7 @@ class TaskService(
         }
         val tasks = repository.findTasksByIds(taskIds)
         tasks.forEach { it.setCompleted() }
+        repository.updateTasks(tasks)
         eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
     }
 
@@ -69,6 +71,7 @@ class TaskService(
         }
         val tasks = repository.findTasksByIds(taskIds)
         tasks.forEach { it.setUncompleted() }
+        repository.updateTasks(tasks)
         eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
     }
 }

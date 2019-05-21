@@ -26,6 +26,8 @@ class TaskRepository : ITaskRepository, IImmutableTaskRepository {
         mTasks.removeAll(removingTasks)
     }
 
+    override fun updateTasks(tasks: List<Task>) {}
+
     override fun findTasksByIds(taskIds: List<TaskId>): List<Task> {
         return mTasks.filter { taskIds.find { taskId -> it.getId().equalTo(taskId) } !== null }
     }

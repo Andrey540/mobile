@@ -1,6 +1,6 @@
 package ru.aegoshin.domain.model.task
 
-open class Task(
+class Task(
     private var id: TaskId,
     private var title: String,
     private var description: String,
@@ -45,42 +45,33 @@ open class Task(
     fun setTitle(newTitle: String) {
         validateTitle(newTitle)
         title = newTitle
-        onUpdated()
     }
 
     fun setDescription(newDescription: String) {
         description = newDescription
-        onUpdated()
     }
 
     fun updateScheduledTimeAndStatus(newScheduledTime: Long?, newStatus: TaskStatus) {
         validateScheduledTimeAndStatus(newScheduledTime, newStatus)
         scheduledTime = newScheduledTime
         status = newStatus
-        onUpdated()
     }
 
     fun setIsNotificationEnabled(enabled: Boolean) {
         isNotificationEnabled = enabled
-        onUpdated()
     }
 
     fun setNotificationOffset(offset: Long) {
         notificationOffset = offset
-        onUpdated()
     }
 
     fun setCompleted() {
         status = TaskStatus.Completed
-        onUpdated()
     }
 
     fun setUncompleted() {
         status = if (scheduledTime == null) TaskStatus.Unscheduled else TaskStatus.Scheduled
-        onUpdated()
     }
-
-    open fun onUpdated() {}
 
     private fun validateScheduledTimeAndStatus(scheduledTime: Long?, status: TaskStatus) {
         if (scheduledTime == null && status == TaskStatus.Scheduled) {

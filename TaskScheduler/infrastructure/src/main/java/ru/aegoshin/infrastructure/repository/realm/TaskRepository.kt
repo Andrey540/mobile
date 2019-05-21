@@ -10,6 +10,7 @@ import ru.aegoshin.domain.model.task.Task
 import ru.aegoshin.infrastructure.entity.Task as TaskEntity
 import ru.aegoshin.domain.model.task.TaskId
 import ru.aegoshin.domain.model.task.TaskStatus
+import java.lang.RuntimeException
 import java.util.*
 
 class TaskRepository(
@@ -36,6 +37,10 @@ class TaskRepository(
             .`in`(TaskEntity.ID_FIELD, taskIds.map { it.toString() }.toTypedArray())
             .findAll()
         tasksObj.deleteAllFromRealm()
+    }
+
+    override fun updateTasks(tasks: List<Task>) {
+        tasks.forEach { updateTask(it) }
     }
 
     override fun findTasksByIds(taskIds: List<TaskId>): List<Task> {
@@ -70,7 +75,7 @@ class TaskRepository(
             .equalTo(TaskEntity.STATUS_FIELD, TaskStatus.Scheduled.status)
             .findAll()
         val tasks = tasksObj.toArray().map { populateTask(it as DynamicRealmObject) }
-        return tasks.filter { it.getScheduledTime()!! - it.getNotificationOffset() in from .. to }
+        return tasks.filter { it.getScheduledTime()!! - it.getNotificationOffset() in from..to }
     }
 
     private fun createDateIntervalQuery(from: Long?, to: Long?): RealmQuery<DynamicRealmObject> {
@@ -85,8 +90,36 @@ class TaskRepository(
         return taskQuery
     }
 
-    private fun populateTask(obj: DynamicRealmObject): TaskEntity {
-        return TaskEntity(obj)
+    private fun updateTask(task: Task) {
+        val taskId = task.getId().toString()
+        val taskObj = realm.where(TaskEntity.SCHEMA).equalTo(TaskEntity.ID_FIELD, taskId).findFirst()
+        taskObj ?: throw RuntimeException("Cannot find task data by id: $taskId")
+
+        taskObj.setString(ru.aegoshin.infrastructure.entity.Task.TITLE_FIELD, task.getTitle())
+        taskObj.setString(ru.aegoshin.infrastructure.entity.Task.DESCRIPTION_FIELD, task.getDescription())
+        if (task.getScheduledTime() == null) {
+            taskObj.setNull(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD)
+        } else {
+            taskObj.setLong(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD, task.getScheduledTime()!!)
+        }
+        taskObj.setInt(ru.aegoshin.infrastructure.entity.Task.STATUS_FIELD, task.getStatus().status)
+        taskObj.setBoolean(
+            ru.aegoshin.infrastructure.entity.Task.IS_NOTIFICATION_ENABLED_FIELD,
+            task.isNotificationEnabled()
+        )
+        taskObj.setLong(ru.aegoshin.infrastructure.entity.Task.NOTIFICATION_OFFSET_FIELD, task.getNotificationOffset())
+    }
+
+    private fun populateTask(obj: DynamicRealmObject): Task {
+        return Task(
+            TaskId(TaskId.stringToUuid(obj.getString(ru.aegoshin.infrastructure.entity.Task.ID_FIELD))),
+            obj.getString(ru.aegoshin.infrastructure.entity.Task.TITLE_FIELD),
+            obj.getString(ru.aegoshin.infrastructure.entity.Task.DESCRIPTION_FIELD),
+            if (obj.isNull(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD)) null else obj.getLong(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD),
+            TaskStatus.fromInt(obj.getInt(ru.aegoshin.infrastructure.entity.Task.STATUS_FIELD)),
+            obj.getBoolean(ru.aegoshin.infrastructure.entity.Task.IS_NOTIFICATION_ENABLED_FIELD),
+            obj.getLong(ru.aegoshin.infrastructure.entity.Task.NOTIFICATION_OFFSET_FIELD)
+        )
     }
 
     companion object {
