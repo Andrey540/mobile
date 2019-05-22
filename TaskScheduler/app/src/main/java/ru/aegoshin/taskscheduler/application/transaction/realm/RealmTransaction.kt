@@ -15,4 +15,15 @@ class RealmTransaction(private val realm: DynamicRealm) : ITransaction {
     override fun rollback() {
         realm.cancelTransaction()
     }
+
+    override fun execute(executor: () -> Unit) {
+        try {
+            realm.beginTransaction()
+            executor()
+            realm.commitTransaction()
+        } catch (exception: Exception) {
+            realm.cancelTransaction()
+            throw exception
+        }
+    }
 }

@@ -4,4 +4,5 @@ interface ITransaction {
     fun begin()
     fun commit()
     fun rollback()
+    fun execute(executor: () -> Unit)
 }
