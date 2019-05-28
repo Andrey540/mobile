@@ -1,17 +1,19 @@
 package ru.aegoshin.domain.service
 
+import ru.aegoshin.domain.exception.CategoryNotFoundException
 import ru.aegoshin.domain.exception.TaskNotFoundException
-import ru.aegoshin.domain.model.event.IEventDispather
-import ru.aegoshin.domain.model.event.TaskAddedEvent
-import ru.aegoshin.domain.model.event.TasksRemovedEvent
-import ru.aegoshin.domain.model.event.TasksUpdatedEvent
+import ru.aegoshin.domain.model.category.Category
+import ru.aegoshin.domain.model.category.CategoryId
+import ru.aegoshin.domain.model.event.*
+import ru.aegoshin.domain.model.repository.ICategoryRepository
 import ru.aegoshin.domain.model.repository.ITaskRepository
 import ru.aegoshin.domain.model.task.Task
 import ru.aegoshin.domain.model.task.TaskId
 import ru.aegoshin.domain.model.task.TaskStatus
 
 class TaskService(
-    private val repository: ITaskRepository,
+    private val taskRepository: ITaskRepository,
+    private val categoryRepository: ICategoryRepository,
     private val eventDispatcher: IEventDispather
 ) : ITaskService {
     override fun addTask(
@@ -20,10 +22,21 @@ class TaskService(
         scheduledTime: Long?,
         status: TaskStatus,
         isNotificationEnabled: Boolean,
-        notificationOffset: Long
+        notificationOffset: Long,
+        categoryId: CategoryId?
     ) {
-        val task = Task(repository.nextId(), title, description, scheduledTime, status, isNotificationEnabled, notificationOffset)
-        repository.addTask(task)
+        val category = getCategoryById(categoryId)
+        val task = Task(
+            taskRepository.nextId(),
+            title,
+            description,
+            scheduledTime,
+            status,
+            isNotificationEnabled,
+            notificationOffset,
+            category
+        )
+        taskRepository.addTask(task)
         eventDispatcher.dispatch(TaskAddedEvent(task.getId()))
     }
 
@@ -34,24 +47,37 @@ class TaskService(
         scheduledTime: Long?,
         status: TaskStatus,
         isNotificationEnabled: Boolean,
-        notificationOffset: Long
+        notificationOffset: Long,
+        categoryId: CategoryId?
     ) {
-        val task = repository.findTaskById(taskId)
+        val task = taskRepository.findTaskById(taskId)
         task ?: throw TaskNotFoundException(taskId)
         task.setTitle(title)
         task.setDescription(description)
         task.updateScheduledTimeAndStatus(scheduledTime, status)
         task.setIsNotificationEnabled(isNotificationEnabled)
         task.setNotificationOffset(notificationOffset)
-        repository.updateTasks(listOf(task))
+
+        val taskCategoryId = task.getCategory()?.getId()
+        val categoryChanged = (categoryId == null && taskCategoryId != null) ||
+                (categoryId != null && taskCategoryId == null) ||
+                (categoryId != null && taskCategoryId != null && !categoryId.equalTo(taskCategoryId))
+
+        val category = getCategoryById(categoryId)
+        task.updateCategory(category)
+
+        taskRepository.updateTasks(listOf(task))
         eventDispatcher.dispatch(TasksUpdatedEvent(listOf(task.getId())))
+        if (categoryChanged) {
+            eventDispatcher.dispatch(TasksCategoryChangedEvent(listOf(task.getId()), categoryId))
+        }
     }
 
     override fun removeTasks(taskIds: List<TaskId>) {
         if (taskIds.isEmpty()) {
             return
         }
-        repository.removeTasks(taskIds)
+        taskRepository.removeTasks(taskIds)
         eventDispatcher.dispatch(TasksRemovedEvent(taskIds))
     }
 
@@ -59,19 +85,39 @@ class TaskService(
         if (taskIds.isEmpty()) {
             return
         }
-        val tasks = repository.findTasksByIds(taskIds)
+        val tasks = taskRepository.findTasksByIds(taskIds)
         tasks.forEach { it.setCompleted() }
-        repository.updateTasks(tasks)
-        eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
+        taskRepository.updateTasks(tasks)
+        eventDispatcher.dispatch(TasksUpdatedEvent(taskIds))
     }
 
     override fun changeTasksStatusToUncompleted(taskIds: List<TaskId>) {
         if (taskIds.isEmpty()) {
             return
         }
-        val tasks = repository.findTasksByIds(taskIds)
+        val tasks = taskRepository.findTasksByIds(taskIds)
         tasks.forEach { it.setUncompleted() }
-        repository.updateTasks(tasks)
-        eventDispatcher.dispatch(TasksUpdatedEvent(tasks.map { it.getId() }))
+        taskRepository.updateTasks(tasks)
+        eventDispatcher.dispatch(TasksUpdatedEvent(taskIds))
+    }
+
+    override fun changeTasksCategory(taskIds: List<TaskId>, categoryId: CategoryId?) {
+        if (taskIds.isEmpty()) {
+            return
+        }
+        val tasks = taskRepository.findTasksByIds(taskIds)
+        val category = getCategoryById(categoryId)
+        tasks.forEach { it.updateCategory(category) }
+        taskRepository.updateTasks(tasks)
+        eventDispatcher.dispatch(TasksCategoryChangedEvent(taskIds, categoryId))
+    }
+
+    private fun getCategoryById(categoryId: CategoryId?): Category? {
+        var result: Category? = null
+        if (categoryId != null) {
+            result = categoryRepository.findCategoryById(categoryId)
+            result ?: throw CategoryNotFoundException(categoryId)
+        }
+        return result
     }
 }

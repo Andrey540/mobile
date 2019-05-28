@@ -20,7 +20,7 @@ import ru.aegoshin.taskscheduler.view.dialog.SelectTaskListDialog
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TaskActivity : LocaliseActivity() {
+class TaskActivity : LocalisedActivity() {
     companion object {
         const val DATE = "dateInterval"
         const val TASK_ID = "task_id"

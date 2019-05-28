@@ -20,7 +20,7 @@ import ru.aegoshin.taskscheduler.view.model.TaskViewModel
 import java.util.*
 import ru.aegoshin.taskscheduler.view.fragment.ScheduledTaskListFragment
 
-class TaskListActivity : LocaliseActivity(), ScheduledTaskListFragment.OnScheduledTaskListFragmentInteractionListener,
+class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnScheduledTaskListFragmentInteractionListener,
     UnscheduledTaskListFragment.OnUnscheduledTaskListFragmentInteractionListener {
     companion object {
         private const val FRAGMENT = "fragment"
@@ -57,7 +57,9 @@ class TaskListActivity : LocaliseActivity(), ScheduledTaskListFragment.OnSchedul
 
         fab.setOnClickListener {
             val intent = Intent(this, TaskActivity::class.java)
-            intent.putExtra(TaskActivity.DATE, Calendar.getInstance().timeInMillis)
+            if (mActiveListFragment is ScheduledTaskListFragment) {
+                intent.putExtra(TaskActivity.DATE, Calendar.getInstance().timeInMillis)
+            }
             startActivity(intent)
         }
 

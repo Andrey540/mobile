@@ -6,7 +6,7 @@ import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import java.util.*
 
-abstract class LocaliseActivity : AppCompatActivity() {
+abstract class LocalisedActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(updateBaseContextLocale(newBase))
     }

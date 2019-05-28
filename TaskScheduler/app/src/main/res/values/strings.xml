@@ -8,7 +8,7 @@
     <string name="task_list_item_mark_unrealized">Пометить как незавершённое</string>
     <string name="task_list_select_all">Выделить всё</string>
     <string name="task_list_unselect_all">Снять выделение</string>
-    <string name="task_name">Назчание задачи</string>
+    <string name="task_name">Название задачи</string>
     <string name="task_description">Описание задачи</string>
     <string name="save">Сохранить</string>
     <string name="date">Дата</string>

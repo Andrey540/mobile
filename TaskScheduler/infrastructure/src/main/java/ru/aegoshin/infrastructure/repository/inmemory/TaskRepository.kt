@@ -1,5 +1,6 @@
 package ru.aegoshin.infrastructure.repository.inmemory
 
+import ru.aegoshin.domain.model.category.CategoryId
 import ru.aegoshin.domain.model.repository.IImmutableTaskRepository
 import ru.aegoshin.domain.model.repository.ITaskRepository
 import ru.aegoshin.domain.model.task.IImmutableTask
@@ -44,6 +45,10 @@ class TaskRepository : ITaskRepository, IImmutableTaskRepository {
         return mTasks.filter { isTaskInDateInterval(it, from, to) }
     }
 
+    override fun findTasksByCategory(categoryId: CategoryId?): List<Task> {
+        return mTasks.filter { isTaskCategoryEqualTo(it, categoryId) }
+    }
+
     override fun findNotifiableTasksByInterval(from: Long, to: Long): List<IImmutableTask> {
         return mTasks.filter {
             it.isNotificationEnabled() && (it.getStatus() == TaskStatus.Scheduled) && isTaskInDateInterval(
@@ -52,6 +57,12 @@ class TaskRepository : ITaskRepository, IImmutableTaskRepository {
                 to + it.getNotificationOffset()
             )
         }
+    }
+
+    private fun isTaskCategoryEqualTo(task: Task, categoryId: CategoryId?): Boolean {
+        val taskCategoryId = task.getCategory()?.getId()
+        return (categoryId == null && taskCategoryId == null) ||
+               (categoryId != null && taskCategoryId != null && categoryId.equalTo(taskCategoryId))
     }
 
     private fun isTaskInDateInterval(task: Task, from: Long?, to: Long?): Boolean {

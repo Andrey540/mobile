@@ -19,7 +19,8 @@ class TaskService(
                 taskData.scheduledTime,
                 TaskStatus.fromInt(taskData.status.status),
                 taskData.isNotificationEnabled,
-                taskData.notificationOffset
+                taskData.notificationOffset,
+                null
             )
         }
     }
@@ -33,7 +34,8 @@ class TaskService(
                 taskData.scheduledTime,
                 TaskStatus.fromInt(taskData.status.status),
                 taskData.isNotificationEnabled,
-                taskData.notificationOffset
+                taskData.notificationOffset,
+                null
             )
         }
     }

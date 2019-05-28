@@ -3,6 +3,7 @@ package ru.aegoshin.infrastructure.repository.realm
 import io.realm.DynamicRealm
 import io.realm.DynamicRealmObject
 import io.realm.RealmQuery
+import ru.aegoshin.domain.model.category.CategoryId
 import ru.aegoshin.domain.model.repository.IImmutableTaskRepository
 import ru.aegoshin.domain.model.repository.ITaskRepository
 import ru.aegoshin.domain.model.task.IImmutableTask
@@ -69,6 +70,11 @@ class TaskRepository(
         return tasksObj.toArray().map { populateTask(it as DynamicRealmObject) }
     }
 
+    override fun findTasksByCategory(categoryid: CategoryId?): List<Task> {
+        // TODO
+        return listOf()
+    }
+
     override fun findNotifiableTasksByInterval(from: Long, to: Long): List<IImmutableTask> {
         val tasksObj = createDateIntervalQuery(from, to + NOTIFICATION_MAX_OFFSET)
             .equalTo(TaskEntity.IS_NOTIFICATION_ENABLED_FIELD, true)
@@ -118,7 +124,8 @@ class TaskRepository(
             if (obj.isNull(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD)) null else obj.getLong(ru.aegoshin.infrastructure.entity.Task.SCHEDULED_TIME_FIELD),
             TaskStatus.fromInt(obj.getInt(ru.aegoshin.infrastructure.entity.Task.STATUS_FIELD)),
             obj.getBoolean(ru.aegoshin.infrastructure.entity.Task.IS_NOTIFICATION_ENABLED_FIELD),
-            obj.getLong(ru.aegoshin.infrastructure.entity.Task.NOTIFICATION_OFFSET_FIELD)
+            obj.getLong(ru.aegoshin.infrastructure.entity.Task.NOTIFICATION_OFFSET_FIELD),
+            null
         )
     }
 

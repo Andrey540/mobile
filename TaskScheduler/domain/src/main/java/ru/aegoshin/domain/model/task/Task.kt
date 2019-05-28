@@ -1,5 +1,7 @@
 package ru.aegoshin.domain.model.task
 
+import ru.aegoshin.domain.model.category.Category
+
 class Task(
     private var id: TaskId,
     private var title: String,
@@ -7,7 +9,8 @@ class Task(
     private var scheduledTime: Long?,
     private var status: TaskStatus,
     private var isNotificationEnabled: Boolean,
-    private var notificationOffset: Long
+    private var notificationOffset: Long,
+    private var category: Category?
 ) : IImmutableTask {
     init {
         validateTitle(title)
@@ -42,6 +45,10 @@ class Task(
         return notificationOffset
     }
 
+    override fun getCategory(): Category? {
+        return category
+    }
+
     fun setTitle(newTitle: String) {
         validateTitle(newTitle)
         title = newTitle
@@ -55,6 +62,10 @@ class Task(
         validateScheduledTimeAndStatus(newScheduledTime, newStatus)
         scheduledTime = newScheduledTime
         status = newStatus
+    }
+
+    fun updateCategory(newCategory: Category?) {
+        category = newCategory
     }
 
     fun setIsNotificationEnabled(enabled: Boolean) {

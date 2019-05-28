@@ -7,6 +7,7 @@ import io.realm.DynamicRealm
 import io.realm.Realm
 import ru.aegoshin.infrastructure.repository.inmemory.TaskRepository as TaskInMemoryRepository
 import ru.aegoshin.infrastructure.repository.realm.TaskRepository as TaskRealmRepository
+import ru.aegoshin.infrastructure.repository.realm.CategoryRepository as CategoryRealmRepository
 import ru.aegoshin.domain.model.task.TaskStatus as DomainTaskStatus
 import ru.aegoshin.infrastructure.list.TaskList
 import ru.aegoshin.domain.service.TaskService as DomainTaskService
@@ -19,10 +20,9 @@ import ru.aegoshin.infrastructure.service.ITaskService
 import ru.aegoshin.infrastructure.service.TaskService
 import ru.aegoshin.infrastructure.task.TaskStatus
 import ru.aegoshin.taskscheduler.application.receiver.TaskNotificationReceiver
-import java.util.*
 import ru.aegoshin.taskscheduler.application.migration.Migration
 import io.realm.RealmConfiguration
-import ru.aegoshin.domain.model.task.Task
+import ru.aegoshin.domain.service.CategoryService
 import ru.aegoshin.taskscheduler.application.transaction.realm.RealmTransaction
 import java.io.File
 
@@ -30,6 +30,7 @@ class TaskSchedulerApplication : Application() {
     private lateinit var mScheduledTaskListPresenter: TaskListPresenter
     private lateinit var mUnscheduledTaskListPresenter: TaskListPresenter
     private lateinit var mTaskService: TaskService
+    private lateinit var mCategoryService: CategoryService
     private lateinit var mTaskDataProvider: TaskDataProvider
     private lateinit var mRealm: DynamicRealm
 
@@ -53,7 +54,8 @@ class TaskSchedulerApplication : Application() {
         mRealm = DynamicRealm.getInstance(realmConfig)
 
         val transaction = RealmTransaction(mRealm)
-        val repository = TaskRealmRepository(mRealm)
+        val taskRepository = TaskRealmRepository(mRealm)
+        val categoryRepository = CategoryRealmRepository(mRealm)
 
         /*val calendar = Calendar.getInstance()
         val notificationOffset: Long = 150 * 60000
@@ -147,12 +149,12 @@ class TaskSchedulerApplication : Application() {
 
         val eventDispatcher = EventDispatcher.instance
         instance = this
-        instance.mTaskService = TaskService(DomainTaskService(repository, eventDispatcher), transaction)
-        instance.mTaskDataProvider = TaskDataProvider(repository)
-        instance.mScheduledTaskListPresenter = TaskListPresenter(repository, TaskList(), eventDispatcher)
-        instance.mUnscheduledTaskListPresenter = TaskListPresenter(repository, TaskList(), eventDispatcher)
+        instance.mTaskService = TaskService(DomainTaskService(taskRepository, categoryRepository, eventDispatcher), transaction)
+        instance.mTaskDataProvider = TaskDataProvider(taskRepository)
+        instance.mScheduledTaskListPresenter = TaskListPresenter(taskRepository, TaskList(), eventDispatcher)
+        instance.mUnscheduledTaskListPresenter = TaskListPresenter(taskRepository, TaskList(), eventDispatcher)
         instance.mUnscheduledTaskListPresenter.updateStatuses(listOf(TaskStatus.Unscheduled))
-        instance.mUnscheduledTaskListPresenter.updateList(repository.findTasksByStatus(DomainTaskStatus.Unscheduled))
+        instance.mUnscheduledTaskListPresenter.updateList(taskRepository.findTasksByStatus(DomainTaskStatus.Unscheduled))
 
         initAlarmManager()
     }

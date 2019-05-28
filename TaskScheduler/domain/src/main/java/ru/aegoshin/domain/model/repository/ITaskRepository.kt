@@ -1,5 +1,6 @@
 package ru.aegoshin.domain.model.repository
 
+import ru.aegoshin.domain.model.category.CategoryId
 import ru.aegoshin.domain.model.task.Task
 import ru.aegoshin.domain.model.task.TaskId
 import ru.aegoshin.domain.model.task.TaskStatus
@@ -13,4 +14,5 @@ interface ITaskRepository {
     fun findTaskById(taskId: TaskId): Task?
     fun findTasksByStatus(status: TaskStatus): List<Task>
     fun findByDateInterval(from: Long?, to: Long?): List<Task>
+    fun findTasksByCategory(categoryId: CategoryId?): List<Task>
 }
