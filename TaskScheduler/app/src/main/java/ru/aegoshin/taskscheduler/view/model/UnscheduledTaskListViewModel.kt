@@ -1,6 +1,6 @@
 package ru.aegoshin.taskscheduler.view.model
 
-import ru.aegoshin.infrastructure.presenter.ITaskListPresenter
+import ru.aegoshin.application.presenter.ITaskListPresenter
 
 class UnscheduledTaskListViewModel(
     taskListPresenter: ITaskListPresenter

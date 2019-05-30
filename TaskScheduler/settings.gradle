@@ -1,1 +1,1 @@
-include ':app', ':domain', ':infrastructure', ':daterangecalendar'
+include ':app', ':domain', ':infrastructure', ':daterangecalendar', ':application'

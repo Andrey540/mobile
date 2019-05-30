@@ -22,9 +22,10 @@ import ru.aegoshin.taskscheduler.view.model.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 import android.widget.LinearLayout
-import ru.aegoshin.infrastructure.task.TaskStatus
+import ru.aegoshin.application.task.TaskStatus
 import android.support.v4.content.ContextCompat
 import ru.aegoshin.taskscheduler.view.model.ScheduledTaskListTab
+
 
 class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
     private var listener: OnScheduledTaskListFragmentInteractionListener? = null

@@ -3,27 +3,26 @@ package ru.aegoshin.taskscheduler.application
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import io.realm.DynamicRealm
 import io.realm.Realm
 import ru.aegoshin.infrastructure.repository.inmemory.TaskRepository as TaskInMemoryRepository
 import ru.aegoshin.infrastructure.repository.realm.TaskRepository as TaskRealmRepository
 import ru.aegoshin.infrastructure.repository.realm.CategoryRepository as CategoryRealmRepository
 import ru.aegoshin.domain.model.task.TaskStatus as DomainTaskStatus
-import ru.aegoshin.infrastructure.list.TaskList
+import ru.aegoshin.application.list.TaskList
 import ru.aegoshin.domain.service.TaskService as DomainTaskService
-import ru.aegoshin.infrastructure.event.EventDispatcher
-import ru.aegoshin.infrastructure.presenter.ITaskListPresenter
-import ru.aegoshin.infrastructure.presenter.TaskListPresenter
-import ru.aegoshin.infrastructure.provider.ITaskDataProvider
-import ru.aegoshin.infrastructure.provider.TaskDataProvider
-import ru.aegoshin.infrastructure.service.ITaskService
-import ru.aegoshin.infrastructure.service.TaskService
-import ru.aegoshin.infrastructure.task.TaskStatus
-import ru.aegoshin.taskscheduler.application.receiver.TaskNotificationReceiver
-import ru.aegoshin.taskscheduler.application.migration.Migration
+import ru.aegoshin.application.event.EventDispatcher
+import ru.aegoshin.application.presenter.ITaskListPresenter
+import ru.aegoshin.application.presenter.TaskListPresenter
+import ru.aegoshin.application.provider.ITaskDataProvider
+import ru.aegoshin.application.provider.TaskDataProvider
+import ru.aegoshin.application.service.ITaskService
+import ru.aegoshin.application.service.TaskService
+import ru.aegoshin.application.task.TaskStatus
+import ru.aegoshin.taskscheduler.framework.receiver.TaskNotificationReceiver
+import ru.aegoshin.infrastructure.migration.realm.Migration
 import io.realm.RealmConfiguration
 import ru.aegoshin.domain.service.CategoryService
-import ru.aegoshin.taskscheduler.application.transaction.realm.RealmTransaction
+import ru.aegoshin.infrastructure.transaction.realm.RealmTransaction
 import java.io.File
 
 class TaskSchedulerApplication : Application() {
@@ -32,7 +31,7 @@ class TaskSchedulerApplication : Application() {
     private lateinit var mTaskService: TaskService
     private lateinit var mCategoryService: CategoryService
     private lateinit var mTaskDataProvider: TaskDataProvider
-    private lateinit var mRealm: DynamicRealm
+    private lateinit var mRealm: Realm
 
     override fun onCreate() {
         super.onCreate()
@@ -51,98 +50,106 @@ class TaskSchedulerApplication : Application() {
             .build()
         Realm.migrateRealm(realmConfig)
         Realm.setDefaultConfiguration(realmConfig)
-        mRealm = DynamicRealm.getInstance(realmConfig)
+        mRealm = Realm.getInstance(realmConfig)
 
         val transaction = RealmTransaction(mRealm)
         val taskRepository = TaskRealmRepository(mRealm)
         val categoryRepository = CategoryRealmRepository(mRealm)
 
+        //for debug by emulator
         /*val calendar = Calendar.getInstance()
         val notificationOffset: Long = 150 * 60000
         calendar.add(Calendar.MILLISECOND, notificationOffset.toInt() + 60000)
 
         transaction.begin()
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 1",
                 "Description 1",
                 null,
                 DomainTaskStatus.Unscheduled,
                 false,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
 
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 2",
                 "Description 2",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         calendar.add(Calendar.MINUTE, 1)
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 3",
                 "Description 3",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         calendar.add(Calendar.MINUTE, 1)
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 4",
                 "Description 4",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         calendar.add(Calendar.MINUTE, 1)
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 5",
                 "Description 5",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         calendar.add(Calendar.MINUTE, 1)
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 6",
                 "Description 6",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         calendar.add(Calendar.MINUTE, 1)
-        repository.addTask(
+        taskRepository.addTask(
             Task(
-                repository.nextId(),
+                taskRepository.nextId(),
                 "Title 7",
                 "Description 7",
                 calendar.timeInMillis,
                 DomainTaskStatus.Scheduled,
                 true,
-                notificationOffset
+                notificationOffset,
+                null
             )
         )
         transaction.commit()*/

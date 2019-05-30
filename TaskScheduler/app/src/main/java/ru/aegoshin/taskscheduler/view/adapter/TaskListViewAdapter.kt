@@ -4,9 +4,9 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
+import android.widget.ImageView
 import kotlinx.android.synthetic.main.task_item.view.*
-import ru.aegoshin.infrastructure.task.TaskStatus
+import ru.aegoshin.application.task.TaskStatus
 import ru.aegoshin.taskscheduler.R
 import ru.aegoshin.taskscheduler.view.inflate
 import ru.aegoshin.taskscheduler.view.model.TaskViewModel
@@ -59,42 +59,44 @@ class TaskListViewRecyclerAdapter(
     }
 
     class TaskHolder (v: View) : RecyclerView.ViewHolder(v) {
-        private val checkbox: CheckBox = v.selectTask
+        private val statusView: ImageView = v.taskStatusView
         private var view: View = v
         private lateinit var task: TaskViewModel
 
         fun bindTask(task: TaskViewModel, clickListener: (task: TaskViewModel) -> Unit, touchListener: View.OnTouchListener?) {
             this.task = task
             view.taskViewTitle.text = task.title
-            checkbox.isChecked = task.selected
 
+            updateBackgroundColor(task.selected)
             updateTime(task.scheduledTime)
             updateStatus(task.status)
             view.setOnLongClickListener{
                 clickListener(task)
                 return@setOnLongClickListener true
             }
-            view.selectTaskClickArea.setOnClickListener{
-                setChecked(!checkbox.isChecked)
-            }
-            checkbox.setOnCheckedChangeListener{_, isChecked ->
-                setChecked(isChecked)
+            statusView.setOnClickListener{
+                setChecked(!this.task.selected)
             }
             if (touchListener != null) {
                 view.setOnTouchListener(touchListener)
             }
         }
 
+        private fun updateBackgroundColor(selected: Boolean) {
+            val backgroundColorRes = if (selected) R.color.selectedListItemColor else R.color.white
+            view.setBackgroundColor(ContextCompat.getColor(view.context, backgroundColorRes))
+        }
+
         private fun updateStatus(status: TaskStatus) {
             when (status) {
                 TaskStatus.Scheduled -> {
-                    view.setBackgroundColor(ContextCompat.getColor(view.context, R.color.white))
+                    statusView.setImageResource(R.drawable.ic_uncompleted)
                 }
                 TaskStatus.Completed -> {
-                    view.setBackgroundColor(ContextCompat.getColor(view.context, R.color.taskDone))
+                    statusView.setImageResource(R.drawable.ic_completed)
                 }
                 TaskStatus.Unscheduled -> {
-                    view.setBackgroundColor(ContextCompat.getColor(view.context, R.color.white))
+                    statusView.setImageResource(R.drawable.ic_unscheduled)
                 }
             }
         }
@@ -110,7 +112,7 @@ class TaskListViewRecyclerAdapter(
 
         private fun setChecked(checked: Boolean) {
             this.task.selected = checked
-            checkbox.isChecked = checked
+            updateBackgroundColor(checked)
         }
     }
 }

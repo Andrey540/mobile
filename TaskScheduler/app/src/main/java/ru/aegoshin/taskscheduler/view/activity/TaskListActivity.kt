@@ -41,7 +41,7 @@ class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnSchedu
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_dashboard -> {
-                supportActionBar!!.title = getString(R.string.title_backlog)
+                supportActionBar!!.title = getString(R.string.title_inbox)
                 switchToFragment(mUnscheduledTaskListFragment)
                 return@OnNavigationItemSelectedListener true
             }
@@ -57,7 +57,7 @@ class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnSchedu
 
         fab.setOnClickListener {
             val intent = Intent(this, TaskActivity::class.java)
-            if (mActiveListFragment is ScheduledTaskListFragment) {
+            if (mActiveListFragment === mScheduledTaskListFragment) {
                 intent.putExtra(TaskActivity.DATE, Calendar.getInstance().timeInMillis)
             }
             startActivity(intent)
@@ -99,10 +99,11 @@ class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnSchedu
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val isUnschedulerFragmentActive = mActiveListFragment === mUnscheduledTaskListFragment
         val notEmptySelection = mActiveListFragment!!.getSelectedIds().isNotEmpty()
         menu.findItem(R.id.task_list_item_remove).setVisible(notEmptySelection)
-        menu.findItem(R.id.task_list_item_mark_as_completed).setVisible(notEmptySelection)
-        menu.findItem(R.id.task_list_item_mark_as_uncompleted).setVisible(notEmptySelection)
+        menu.findItem(R.id.task_list_item_mark_as_completed).setVisible(notEmptySelection && !isUnschedulerFragmentActive)
+        menu.findItem(R.id.task_list_item_mark_as_uncompleted).setVisible(notEmptySelection && !isUnschedulerFragmentActive)
         menu.findItem(R.id.task_list_unselect_all).setVisible(notEmptySelection)
         return true
     }

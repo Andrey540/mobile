@@ -1,9 +1,8 @@
 package ru.aegoshin.taskscheduler.view.adapter
 
 import android.support.v7.util.DiffUtil
-import android.support.v7.util.ListUpdateCallback
 import android.support.v7.widget.RecyclerView
-import ru.aegoshin.infrastructure.task.TaskStatus
+import ru.aegoshin.application.task.TaskStatus
 
 interface AutoUpdatableAdapter {
 

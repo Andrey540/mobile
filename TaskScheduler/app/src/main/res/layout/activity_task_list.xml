@@ -5,12 +5,19 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".view.activity.TaskListActivity" android:background="#FFFFFF">
+        tools:context=".view.activity.TaskListActivity" android:background="@color/white">
 
+    <RelativeLayout
+            android:id="@+id/statusbar"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:layout_alignParentTop="true"
+            android:background="@color/colorPrimaryDark" >
+    </RelativeLayout>
     <android.support.design.widget.AppBarLayout
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:theme="@style/AppTheme.AppBarOverlay" android:layout_marginTop="25dp">
 
         <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"

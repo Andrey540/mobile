@@ -31,10 +31,13 @@ android {
 
 dependencies {
     implementation project(path: ':domain')
+    implementation project(path: ':application')
     implementation project(path: ':infrastructure')
     implementation project(path: ':daterangecalendar')
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'com.ernestoyaquello.dragdropswiperecyclerview:drag-drop-swipe-recyclerview:0.4.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'

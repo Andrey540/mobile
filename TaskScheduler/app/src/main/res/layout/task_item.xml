@@ -8,14 +8,13 @@
                                              android:duplicateParentState="true"
 >
 
-    <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/selectTask"
-            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="12dp" android:layout_marginBottom="11dp"
-            app:buttonTint="@color/colorPrimary"
-            app:layout_constraintBottom_toTopOf="@+id/listDivider" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp"/>
+    <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp" app:srcCompat="@drawable/ic_uncompleted"
+            android:id="@+id/taskStatusView"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/uncompleted_item" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="12dp" android:layout_marginTop="12dp"/>
     <TextView
             android:id="@+id/taskViewTitle"
             android:layout_width="0dp"
@@ -26,9 +25,10 @@
             android:text=""
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toEndOf="@+id/selectTask"
-            android:layout_marginStart="8dp" android:layout_marginEnd="8dp"
-            app:layout_constraintEnd_toStartOf="@+id/taskScheduledDateTime"/>
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/taskScheduledDateTime"
+            app:layout_constraintStart_toEndOf="@+id/taskStatusView" android:layout_marginStart="10dp"/>
 
     <TextView
             android:id="@+id/taskScheduledDateTime"
@@ -51,12 +51,5 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
-    <android.support.constraint.ConstraintLayout
-            android:layout_width="48dp"
-            android:layout_height="54dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" android:id="@+id/selectTaskClickArea">
-
-    </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

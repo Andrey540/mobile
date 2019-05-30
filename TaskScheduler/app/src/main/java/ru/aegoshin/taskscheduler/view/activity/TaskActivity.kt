@@ -5,6 +5,7 @@ import android.widget.DatePicker
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.support.constraint.ConstraintLayout
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View.INVISIBLE
@@ -12,8 +13,8 @@ import android.view.View.VISIBLE
 import android.widget.TimePicker
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_task.*
-import ru.aegoshin.infrastructure.task.TaskData
-import ru.aegoshin.infrastructure.task.TaskStatus
+import ru.aegoshin.application.task.TaskData
+import ru.aegoshin.application.task.TaskStatus
 import ru.aegoshin.taskscheduler.R
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
 import ru.aegoshin.taskscheduler.view.dialog.SelectTaskListDialog
@@ -33,6 +34,7 @@ class TaskActivity : LocalisedActivity() {
     private var mTaskId: String? = null
     private var mDate: Long? = null
     private var mMenu: Menu? = null
+    private var mSelectFromInboxEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +47,16 @@ class TaskActivity : LocalisedActivity() {
             taskData = mTaskDataProvider.findTaskDataById(mTaskId!!)
             taskData ?: throw IllegalArgumentException("Cannot find task data by id: $mTaskId")
         }
+
+        val startedFromInbox = (mDate == null && mTaskId == null) || (taskData != null && taskData.status == TaskStatus.Unscheduled)
+        mSelectFromInboxEnabled = (mTaskId == null) && !startedFromInbox
+
+        if (startedFromInbox) {
+            dateTimeLayout.visibility = INVISIBLE
+            (notificationLayout.layoutParams as ConstraintLayout.LayoutParams).topToBottom = taskDescriptionText.id
+            isCompletedCheckBox.visibility = INVISIBLE
+        }
+
         initViewFields(taskData)
 
         clearDateButton.setOnClickListener {
@@ -52,6 +64,7 @@ class TaskActivity : LocalisedActivity() {
             dateText.setText("")
             timeText.setText("")
             clearDateButton.visibility = INVISIBLE
+            resetAndLockCompletedCheckBox()
         }
 
         initDateComponent()
@@ -68,7 +81,7 @@ class TaskActivity : LocalisedActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.select_unscheduled_task).setVisible(mTaskId == null)
+        menu.findItem(R.id.select_unscheduled_task).setVisible(mSelectFromInboxEnabled && (mTaskId == null))
         return true
     }
 
@@ -105,6 +118,8 @@ class TaskActivity : LocalisedActivity() {
             mCalendar.timeInMillis = mDate!!
             updateDateView()
             updateTimeView()
+        } else {
+           resetAndLockCompletedCheckBox()
         }
     }
 
@@ -141,6 +156,7 @@ class TaskActivity : LocalisedActivity() {
                 mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
                 mDate = mCalendar.time.time
                 clearDateButton.visibility = VISIBLE
+                unlockCompletedCheckBox()
 
                 updateDateView()
             }
@@ -154,6 +170,15 @@ class TaskActivity : LocalisedActivity() {
                 mCalendar.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
+    }
+
+    private fun resetAndLockCompletedCheckBox () {
+        isCompletedCheckBox.isEnabled = false
+        isCompletedCheckBox.isChecked = false
+    }
+
+    private fun unlockCompletedCheckBox () {
+        isCompletedCheckBox.isEnabled = true
     }
 
     private fun initTimeComponent() {

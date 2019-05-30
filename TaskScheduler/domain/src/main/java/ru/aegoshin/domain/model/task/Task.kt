@@ -91,6 +91,9 @@ class Task(
         if (scheduledTime != null && status == TaskStatus.Unscheduled) {
             throw IllegalArgumentException("Task with scheduledTime cannot be unscheduled")
         }
+        if (scheduledTime == null && status == TaskStatus.Completed) {
+            throw IllegalArgumentException("Task without scheduledTime cannot be completed")
+        }
     }
 
     private fun validateTitle(title: String) {

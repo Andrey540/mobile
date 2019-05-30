@@ -1,6 +1,6 @@
 package ru.aegoshin.taskscheduler.view.model
 
-import ru.aegoshin.infrastructure.task.TaskStatus
+import ru.aegoshin.application.task.TaskStatus
 
 class TaskViewModel (
     var selected: Boolean,

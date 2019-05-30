@@ -26,7 +26,7 @@
         </activity>
 
         <receiver
-                android:name=".application.receiver.TaskNotificationReceiver"
+                android:name="ru.aegoshin.taskscheduler.framework.receiver.TaskNotificationReceiver"
                 android:enabled="true"
                 android:exported="true">
         </receiver>

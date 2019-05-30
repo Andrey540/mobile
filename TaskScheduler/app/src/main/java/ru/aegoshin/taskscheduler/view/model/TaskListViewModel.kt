@@ -2,9 +2,9 @@ package ru.aegoshin.taskscheduler.view.model
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import ru.aegoshin.infrastructure.list.ITaskList
-import ru.aegoshin.infrastructure.presenter.ITaskListPresenter
-import ru.aegoshin.infrastructure.task.Task
+import ru.aegoshin.application.list.ITaskList
+import ru.aegoshin.application.presenter.ITaskListPresenter
+import ru.aegoshin.application.task.Task
 
 open class TaskListViewModel(
     private val taskListPresenter: ITaskListPresenter

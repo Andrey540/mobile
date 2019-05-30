@@ -14,7 +14,7 @@ abstract class LocalisedActivity : AppCompatActivity() {
     private fun updateBaseContextLocale(context: Context): Context {
         val locale = Locale("ru", "RU")
         Locale.setDefault(locale)
-     //   TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"))
+        //TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow")) //for debug by emulator
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return updateResourcesLocale(context, locale)
         }
