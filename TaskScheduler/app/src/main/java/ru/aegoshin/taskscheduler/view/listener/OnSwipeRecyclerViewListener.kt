@@ -13,8 +13,8 @@ import ru.aegoshin.taskscheduler.view.adapter.TaskListViewRecyclerAdapter
 
 
 open class OnSwipeRecyclerViewListener(
-    private val context: Context,
-    private val adapter: TaskListViewRecyclerAdapter,
+    protected val context: Context,
+    protected val adapter: TaskListViewRecyclerAdapter,
     dragDirs: Int,
     swipeDirs: Int
 ) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
@@ -43,7 +43,51 @@ open class OnSwipeRecyclerViewListener(
     }
 
     override fun onChildDraw(
-        c: Canvas,
+        canvas: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int,
+        isCurrentlyActive: Boolean
+    ) {
+        decorateListItem(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+
+        val maxSwipe = viewHolder.itemView.height * MAX_SWIPE_COEFFICIENT
+        var translationX = dX
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX <= 0) {
+            translationX = -minOf(-dX, maxSwipe)
+        } else if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX > 0) {
+            translationX = minOf(dX, maxSwipe)
+        }
+
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            var left: Float = viewHolder.itemView.left.toFloat()
+            val right: Float = if (dX > 0) (left + maxSwipe) else viewHolder.itemView.right.toFloat()
+            left = if (dX > 0) left else right - maxSwipe
+            val top: Float = viewHolder.itemView.top.toFloat()
+            val bottom: Float = top + maxSwipe
+
+            recyclerView.setOnTouchListener(getOnTouchListener(viewHolder, actionState, dX, left, right, top, bottom))
+        }
+
+        onChildDrawImpl(canvas, recyclerView, viewHolder, translationX, dY, actionState, isCurrentlyActive)
+    }
+
+    protected fun onChildDrawImpl(
+        canvas: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int,
+        isCurrentlyActive: Boolean
+    ) {
+        super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+    }
+
+    protected open fun decorateListItem(
+        canvas: Canvas,
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder,
         dX: Float,
@@ -53,7 +97,7 @@ open class OnSwipeRecyclerViewListener(
     ) {
         RecyclerViewSwipeDecorator.Builder(
             context,
-            c,
+            canvas,
             recyclerView,
             viewHolder,
             dX,
@@ -67,46 +111,34 @@ open class OnSwipeRecyclerViewListener(
             .addSwipeRightActionIcon(R.drawable.ic_edit)
             .create()
             .decorate()
+    }
 
-        val maxSwipe = viewHolder.itemView.height * MAX_SWIPE_COEFFICIENT
-        var translationX = dX
-        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX <= 0)
-        {
-            translationX = -minOf(-dX, maxSwipe)
-        }
-        else if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX > 0)
-        {
-            translationX = minOf(dX, maxSwipe)
-        }
-
-        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-            var left: Float = viewHolder.itemView.left.toFloat()
-            val right: Float = if (dX > 0) (left + maxSwipe) else viewHolder.itemView.right.toFloat()
-            left = if (dX > 0) left else right - maxSwipe
-            val top = viewHolder.itemView.top
-            val bottom = top + maxSwipe
-
-            recyclerView.setOnTouchListener(View.OnTouchListener { _, motionEvent ->
-                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE &&
-                    motionEvent.action == MotionEvent.ACTION_DOWN &&
-                    motionEvent.x >= left && motionEvent.x <= right &&
-                    motionEvent.y <= bottom && motionEvent.y >= top
-                ) {
-                    if (dX > 0) {
-                        adapter.onEditTask(viewHolder.adapterPosition)
-                    }
-                    else {
-                        adapter.onDeleteTask(viewHolder.adapterPosition)
-                    }
+    private fun getOnTouchListener(
+        viewHolder: RecyclerView.ViewHolder,
+        actionState: Int,
+        dX: Float,
+        left: Float,
+        right: Float,
+        top: Float,
+        bottom: Float
+    ): View.OnTouchListener {
+        return View.OnTouchListener { _, motionEvent ->
+            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE &&
+                motionEvent.action == MotionEvent.ACTION_DOWN &&
+                motionEvent.x >= left && motionEvent.x <= right &&
+                motionEvent.y <= bottom && motionEvent.y >= top
+            ) {
+                if (dX > 0) {
+                    adapter.onEditTask(viewHolder.adapterPosition)
+                } else {
+                    adapter.onDeleteTask(viewHolder.adapterPosition)
                 }
-                return@OnTouchListener false
-            })
+            }
+            return@OnTouchListener false
         }
-
-        super.onChildDraw(c, recyclerView, viewHolder, translationX, dY, actionState, isCurrentlyActive)
     }
 
     companion object {
-        private const val MAX_SWIPE_COEFFICIENT = 1.3f
+        private const val MAX_SWIPE_COEFFICIENT = 1.0f
     }
 }

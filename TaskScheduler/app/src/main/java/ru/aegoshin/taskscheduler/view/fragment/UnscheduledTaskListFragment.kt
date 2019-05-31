@@ -33,8 +33,11 @@ class UnscheduledTaskListFragment : Fragment(), ITaskListFragment {
     ): View? {
         mView = inflater.inflate(R.layout.fragment_unscheduled_task_list, container, false)
 
-        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> listener?.onEditTaskListItem(task) },
-            { task -> listener?.onDeleteTaskListItem(task) })
+        mTaskListAdapter = TaskListViewRecyclerAdapter(
+            { task -> listener?.onEditTaskListItem(task) },
+            { task -> listener?.onDeleteTaskListItem(task) },
+            null
+        )
         linearLayoutManager = LinearLayoutManager(context)
         mView.taskList.layoutManager = linearLayoutManager
         mView.taskList.adapter = mTaskListAdapter

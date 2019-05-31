@@ -15,7 +15,6 @@ import ru.aegoshin.taskscheduler.R
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
 import ru.aegoshin.taskscheduler.application.injection.ViewModelInjector
 import ru.aegoshin.taskscheduler.view.adapter.TaskListViewRecyclerAdapter
-import ru.aegoshin.taskscheduler.view.listener.OnSwipeTouchListener
 import ru.aegoshin.taskscheduler.view.model.DateIntervalViewModel
 import ru.aegoshin.taskscheduler.view.model.ScheduledTaskListViewModel
 import ru.aegoshin.taskscheduler.view.model.TaskViewModel
@@ -26,7 +25,7 @@ import ru.aegoshin.application.task.TaskStatus
 import android.support.v4.content.ContextCompat
 import ru.aegoshin.taskscheduler.view.model.ScheduledTaskListTab
 import android.support.v7.widget.helper.ItemTouchHelper
-import ru.aegoshin.taskscheduler.view.listener.OnSwipeRecyclerViewListener
+import ru.aegoshin.taskscheduler.view.listener.OnSwipeRecyclerViewSchedulerTasksListener
 
 
 class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
@@ -48,14 +47,17 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
     ): View? {
         mView = inflater.inflate(R.layout.fragment_scheduled_task_list, container, false)
 
-        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> listener?.onEditTaskListItem(task) },
-            { task -> listener?.onDeleteTaskListItem(task) })
+        mTaskListAdapter = TaskListViewRecyclerAdapter(
+            { task -> listener?.onEditTaskListItem(task) },
+            { task -> listener?.onDeleteTaskListItem(task) },
+            { task -> listener?.onSwapTaskStatusListItem(task) }
+        )
         linearLayoutManager = LinearLayoutManager(context)
         mView.taskList.layoutManager = linearLayoutManager
         mView.taskList.adapter = mTaskListAdapter
 
         val swipeRecyclerViewListener =
-            OnSwipeRecyclerViewListener(context!!, mTaskListAdapter, 0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT)
+            OnSwipeRecyclerViewSchedulerTasksListener(context!!, mTaskListAdapter, 0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT)
         val itemTouchHelper = ItemTouchHelper(swipeRecyclerViewListener)
         itemTouchHelper.attachToRecyclerView(mView.taskList)
 
@@ -254,5 +256,6 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
         fun onShowDateRangeCalendar(from: Long, to: Long)
         fun onEditTaskListItem(task: TaskViewModel)
         fun onDeleteTaskListItem(task: TaskViewModel)
+        fun onSwapTaskStatusListItem(task: TaskViewModel)
     }
 }

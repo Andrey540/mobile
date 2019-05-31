@@ -16,7 +16,8 @@ import kotlin.properties.Delegates
 
 class TaskListViewRecyclerAdapter(
     private val editListener: (task: TaskViewModel) -> Unit,
-    private val deleteListener: (task: TaskViewModel) -> Unit
+    private val deleteListener: (task: TaskViewModel) -> Unit,
+    private val swapStatusListener: ((task: TaskViewModel) -> Unit)?
 ) : RecyclerView.Adapter<TaskListViewRecyclerAdapter.TaskHolder>(), AutoUpdatableAdapter {
 
     private var mTasks: List<TaskViewModel> by Delegates.observable(emptyList()) { _, oldValue, newValue ->
@@ -47,6 +48,12 @@ class TaskListViewRecyclerAdapter(
 
     fun onDeleteTask(position: Int) {
         deleteListener(mTasks[position])
+    }
+
+    fun onSwapTaskStatus(position: Int) {
+        if (swapStatusListener != null) {
+            swapStatusListener!!(mTasks[position])
+        }
     }
 
     fun selectAll() {

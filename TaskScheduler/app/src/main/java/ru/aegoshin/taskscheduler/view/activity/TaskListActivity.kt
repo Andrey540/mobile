@@ -12,6 +12,7 @@ import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
 import android.view.Menu
 import android.view.MenuItem
 import android.support.v7.widget.SearchView
+import ru.aegoshin.application.task.TaskStatus
 import ru.aegoshin.daterangecalendar.DateRangeCalendarDialog
 import ru.aegoshin.taskscheduler.view.fragment.UnscheduledTaskListFragment
 import ru.aegoshin.taskscheduler.view.fragment.ITaskListFragment
@@ -146,6 +147,14 @@ class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnSchedu
 
     override fun onDeleteTaskListItem(task: TaskViewModel) {
         mTaskService.removeTasks(listOf(task.id))
+    }
+
+    override fun onSwapTaskStatusListItem(task: TaskViewModel) {
+        if (task.status == TaskStatus.Completed) {
+            mTaskService.changeTasksStatusToUncompleted(listOf(task.id))
+        } else if (task.status == TaskStatus.Scheduled) {
+            mTaskService.changeTasksStatusToCompleted(listOf(task.id))
+        }
     }
 
     private fun getOnDateChangedCallback(): DateRangeCalendarDialog.Callback {

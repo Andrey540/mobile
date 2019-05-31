@@ -5,6 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="white">#FFFFFF</color>
     <color name="red">#F43838</color>
+    <color name="editTaskColor">#F59A13</color>
     <color name="selectedListItemColor">#DAEAFF</color>
     <color name="selectedTabColor">#F06800</color>
     <color name="unselectedTabColor">#757575</color>
