@@ -18,7 +18,8 @@ class SelectTaskListDialogViewAdapter(
             newValue,
             compare = { task1, task2 ->
                 task1.id === task2.id
-            })
+            },
+            getPayload = null)
     }
 
     fun updateItems(taskList: List<TaskViewModel>) {

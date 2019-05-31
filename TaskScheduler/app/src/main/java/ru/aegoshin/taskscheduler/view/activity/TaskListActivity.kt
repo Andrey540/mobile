@@ -144,6 +144,10 @@ class TaskListActivity : LocalisedActivity(), ScheduledTaskListFragment.OnSchedu
         startActivity(intent)
     }
 
+    override fun onDeleteTaskListItem(task: TaskViewModel) {
+        mTaskService.removeTasks(listOf(task.id))
+    }
+
     private fun getOnDateChangedCallback(): DateRangeCalendarDialog.Callback {
         return object : DateRangeCalendarDialog.Callback {
             override fun onCancelled() {}

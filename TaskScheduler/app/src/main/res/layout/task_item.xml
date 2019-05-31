@@ -9,12 +9,12 @@
 >
 
     <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp" app:srcCompat="@drawable/ic_uncompleted"
+            android:layout_width="28dp"
+            android:layout_height="30dp" app:srcCompat="@drawable/ic_uncompleted"
             android:id="@+id/taskStatusView"
             app:layout_constraintTop_toTopOf="parent"
             android:contentDescription="@string/uncompleted_item" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="12dp" android:layout_marginTop="12dp"/>
+            android:layout_marginStart="14dp" android:layout_marginTop="14dp"/>
     <TextView
             android:id="@+id/taskViewTitle"
             android:layout_width="0dp"
@@ -28,7 +28,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@+id/taskScheduledDateTime"
-            app:layout_constraintStart_toEndOf="@+id/taskStatusView" android:layout_marginStart="10dp"/>
+            app:layout_constraintStart_toEndOf="@+id/taskStatusView" android:layout_marginStart="14dp"/>
 
     <TextView
             android:id="@+id/taskScheduledDateTime"

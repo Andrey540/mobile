@@ -25,6 +25,8 @@ import android.widget.LinearLayout
 import ru.aegoshin.application.task.TaskStatus
 import android.support.v4.content.ContextCompat
 import ru.aegoshin.taskscheduler.view.model.ScheduledTaskListTab
+import android.support.v7.widget.helper.ItemTouchHelper
+import ru.aegoshin.taskscheduler.view.listener.OnSwipeRecyclerViewListener
 
 
 class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
@@ -46,12 +48,16 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
     ): View? {
         mView = inflater.inflate(R.layout.fragment_scheduled_task_list, container, false)
 
-        val swipeTouchListener = getSwipeTouchListener()
-        mView.taskList.setOnTouchListener(swipeTouchListener)
-        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> taskListItemClicked(task) }, swipeTouchListener)
+        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> listener?.onEditTaskListItem(task) },
+            { task -> listener?.onDeleteTaskListItem(task) })
         linearLayoutManager = LinearLayoutManager(context)
         mView.taskList.layoutManager = linearLayoutManager
         mView.taskList.adapter = mTaskListAdapter
+
+        val swipeRecyclerViewListener =
+            OnSwipeRecyclerViewListener(context!!, mTaskListAdapter, 0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT)
+        val itemTouchHelper = ItemTouchHelper(swipeRecyclerViewListener)
+        itemTouchHelper.attachToRecyclerView(mView.taskList)
 
         val context = activity!!.applicationContext
         val layout = LinearLayout(context)
@@ -140,10 +146,6 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
         listener?.onShowDateRangeCalendar(mViewModel.dateInterval.value!!.from, mViewModel.dateInterval.value!!.to)
     }
 
-    private fun taskListItemClicked(task: TaskViewModel) {
-        listener?.onEditTaskListItem(task)
-    }
-
     private fun getOnTabSelectedListener(): TabLayout.OnTabSelectedListener {
         return object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -154,6 +156,7 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
             override fun onTabUnselected(tab: TabLayout.Tab) {
                 setUnselectedTabColor(tab)
             }
+
             override fun onTabReselected(tab: TabLayout.Tab) {}
         }
     }
@@ -166,18 +169,6 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
     private fun setUnselectedTabColor(tab: TabLayout.Tab) {
         val tabIconColor = ContextCompat.getColor(context!!, R.color.unselectedTabColor)
         tab.icon!!.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN)
-    }
-
-    private fun getSwipeTouchListener(): OnSwipeTouchListener {
-        return object : OnSwipeTouchListener(context!!) {
-            override fun onSwipeLeft() {
-                onNextIntervalSelected()
-            }
-
-            override fun onSwipeRight() {
-                onPrevIntervalSelected()
-            }
-        }
     }
 
     private fun onNextIntervalSelected() {
@@ -262,5 +253,6 @@ class ScheduledTaskListFragment : Fragment(), ITaskListFragment {
     interface OnScheduledTaskListFragmentInteractionListener {
         fun onShowDateRangeCalendar(from: Long, to: Long)
         fun onEditTaskListItem(task: TaskViewModel)
+        fun onDeleteTaskListItem(task: TaskViewModel)
     }
 }

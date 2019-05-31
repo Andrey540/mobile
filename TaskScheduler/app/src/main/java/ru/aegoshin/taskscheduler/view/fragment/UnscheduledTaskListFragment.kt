@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import ru.aegoshin.taskscheduler.view.adapter.TaskListViewRecyclerAdapter
 import ru.aegoshin.taskscheduler.view.model.TaskViewModel
 import android.widget.LinearLayout
 import ru.aegoshin.taskscheduler.application.TaskSchedulerApplication
+import ru.aegoshin.taskscheduler.view.listener.OnSwipeRecyclerViewListener
 import ru.aegoshin.taskscheduler.view.model.UnscheduledTaskListViewModel
 
 class UnscheduledTaskListFragment : Fragment(), ITaskListFragment {
@@ -31,7 +33,8 @@ class UnscheduledTaskListFragment : Fragment(), ITaskListFragment {
     ): View? {
         mView = inflater.inflate(R.layout.fragment_unscheduled_task_list, container, false)
 
-        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> taskListItemClicked(task) }, null)
+        mTaskListAdapter = TaskListViewRecyclerAdapter({ task -> listener?.onEditTaskListItem(task) },
+            { task -> listener?.onDeleteTaskListItem(task) })
         linearLayoutManager = LinearLayoutManager(context)
         mView.taskList.layoutManager = linearLayoutManager
         mView.taskList.adapter = mTaskListAdapter
@@ -39,6 +42,11 @@ class UnscheduledTaskListFragment : Fragment(), ITaskListFragment {
         val context = activity!!.applicationContext
         val layout = LinearLayout(context)
         layout.addView(mView)
+
+        val swipeRecyclerViewListener =
+            OnSwipeRecyclerViewListener(context!!, mTaskListAdapter, 0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT)
+        val itemTouchHelper = ItemTouchHelper(swipeRecyclerViewListener)
+        itemTouchHelper.attachToRecyclerView(mView.taskList)
 
         return layout
     }
@@ -84,11 +92,8 @@ class UnscheduledTaskListFragment : Fragment(), ITaskListFragment {
         mTaskListPresenter.searchTasks(search)
     }
 
-    private fun taskListItemClicked(task: TaskViewModel) {
-        listener?.onEditTaskListItem(task)
-    }
-
     interface OnUnscheduledTaskListFragmentInteractionListener {
         fun onEditTaskListItem(task: TaskViewModel)
+        fun onDeleteTaskListItem(task: TaskViewModel)
     }
 }
