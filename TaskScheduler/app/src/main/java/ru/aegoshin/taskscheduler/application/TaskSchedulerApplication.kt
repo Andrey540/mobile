@@ -21,9 +21,11 @@ import ru.aegoshin.application.task.TaskStatus
 import ru.aegoshin.taskscheduler.framework.receiver.TaskNotificationReceiver
 import ru.aegoshin.infrastructure.migration.realm.Migration
 import io.realm.RealmConfiguration
+import ru.aegoshin.domain.model.task.Task
 import ru.aegoshin.domain.service.CategoryService
 import ru.aegoshin.infrastructure.transaction.realm.RealmTransaction
 import java.io.File
+import java.util.*
 
 class TaskSchedulerApplication : Application() {
     private lateinit var mScheduledTaskListPresenter: TaskListPresenter
@@ -57,7 +59,7 @@ class TaskSchedulerApplication : Application() {
         val categoryRepository = CategoryRealmRepository(mRealm)
 
         //for debug by emulator
-        /*val calendar = Calendar.getInstance()
+       /* val calendar = Calendar.getInstance()
         val notificationOffset: Long = 150 * 60000
         calendar.add(Calendar.MILLISECOND, notificationOffset.toInt() + 60000)
 

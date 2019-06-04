@@ -125,12 +125,13 @@ class TaskActivity : LocalisedActivity() {
 
     private fun initSaveButton() {
         saveButton.setOnClickListener {
-            if (taskNameText.text.isEmpty()) {
+            val title = taskNameText.text.trim()
+            if (title.isEmpty()) {
                 Toast.makeText(this, R.string.task_name_is_required, Toast.LENGTH_SHORT).show()
             } else {
                 val taskData = TaskData(
-                    taskNameText.text.toString(),
-                    taskDescriptionText.text.toString(),
+                    title.toString(),
+                    taskDescriptionText.text.toString().trim(),
                     mDate,
                     getStatus(),
                     enableNotificationCheckBox.isChecked,

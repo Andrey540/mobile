@@ -5,6 +5,7 @@ class Category(
     private var title: String
 ) : IImmutableCategory {
     init {
+        title = title.trim()
         validateTitle(title)
     }
 
@@ -18,11 +19,11 @@ class Category(
 
     fun setTitle(newTitle: String) {
         validateTitle(newTitle)
-        title = newTitle
+        title = newTitle.trim()
     }
 
     private fun validateTitle(title: String) {
-        if (title.isEmpty()) {
+        if (title.trim().isEmpty()) {
             throw IllegalArgumentException("Category title cannot be empty")
         }
     }

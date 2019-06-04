@@ -13,6 +13,7 @@ class Task(
     private var category: Category?
 ) : IImmutableTask {
     init {
+        title = title.trim()
         validateTitle(title)
         validateScheduledTimeAndStatus(scheduledTime, status)
     }
@@ -51,11 +52,11 @@ class Task(
 
     fun setTitle(newTitle: String) {
         validateTitle(newTitle)
-        title = newTitle
+        title = newTitle.trim()
     }
 
     fun setDescription(newDescription: String) {
-        description = newDescription
+        description = newDescription.trim()
     }
 
     fun updateScheduledTimeAndStatus(newScheduledTime: Long?, newStatus: TaskStatus) {
@@ -97,7 +98,7 @@ class Task(
     }
 
     private fun validateTitle(title: String) {
-        if (title.isEmpty()) {
+        if (title.trim().isEmpty()) {
             throw IllegalArgumentException("Task title cannot be empty")
         }
     }

@@ -76,7 +76,7 @@ class TaskListViewRecyclerAdapter(
     override fun onBindViewHolder(holder: TaskHolder, position: Int, payloads: MutableList<Any>) {
         if (payloads.isNotEmpty()) {
             val payload = payloads[0] as TaskListItemPayload
-            holder.bindTask(payload)
+            holder.bindTask(mTasks[position], payload)
         } else {
             super.onBindViewHolder(holder, position, payloads)
         }
@@ -113,7 +113,8 @@ class TaskListViewRecyclerAdapter(
             }
         }
 
-        fun bindTask(payload: TaskListItemPayload) {
+        fun bindTask(task: TaskViewModel, payload: TaskListItemPayload) {
+            this.task = task
             if (payload.selected != null) {
                 setSelected(payload.selected!!)
             }
