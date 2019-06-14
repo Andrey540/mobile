@@ -43,6 +43,10 @@ open class OnSwipeRecyclerViewListener(
         }
     }
 
+    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+        swipedItems.remove(viewHolder)
+    }
+
     override fun onChildDraw(
         canvas: Canvas,
         recyclerView: RecyclerView,
@@ -138,7 +142,6 @@ open class OnSwipeRecyclerViewListener(
                         adapter.onEditTask(viewHolder.adapterPosition)
                     } else if (direction == ItemTouchHelper.LEFT) {
                         adapter.onDeleteTask(viewHolder.adapterPosition)
-                        swipedItems.remove(viewHolder)
                     }
                 }
             }

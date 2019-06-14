@@ -109,7 +109,6 @@ class OnSwipeRecyclerViewSchedulerTasksListener(
                         }
                     } else if (direction == ItemTouchHelper.LEFT) {
                         adapter.onDeleteTask(viewHolder.adapterPosition)
-                        swipedItems.remove(viewHolder)
                     }
                 }
             }
