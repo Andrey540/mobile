@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.TypedValue
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import ru.aegoshin.taskscheduler.R
 import android.view.MotionEvent
@@ -19,7 +20,7 @@ open class OnSwipeRecyclerViewListener(
     swipeDirs: Int
 ) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
 
-    private val swipedItems = mutableMapOf<RecyclerView.ViewHolder, Boolean>()
+    protected val swipedItems = mutableMapOf<RecyclerView.ViewHolder, Int>()
 
     override fun onMove(
         recyclerView: RecyclerView,
@@ -38,7 +39,7 @@ open class OnSwipeRecyclerViewListener(
             swipedItems.remove(viewHolder)
             adapter.notifyItemChanged(viewHolder.adapterPosition)
         } else {
-            swipedItems[viewHolder] = true
+            swipedItems[viewHolder] = direction
         }
     }
 
@@ -53,7 +54,7 @@ open class OnSwipeRecyclerViewListener(
     ) {
         decorateListItem(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
 
-        val maxSwipe = viewHolder.itemView.height * MAX_SWIPE_COEFFICIENT
+        val maxSwipe = getBlockSize()
         var translationX = dX
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX <= 0) {
             translationX = -minOf(-dX, maxSwipe)
@@ -62,13 +63,7 @@ open class OnSwipeRecyclerViewListener(
         }
 
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-            var left: Float = viewHolder.itemView.left.toFloat()
-            val right: Float = if (dX > 0) (left + maxSwipe) else viewHolder.itemView.right.toFloat()
-            left = if (dX > 0) left else right - maxSwipe
-            val top: Float = viewHolder.itemView.top.toFloat()
-            val bottom: Float = top + maxSwipe
-
-            recyclerView.setOnTouchListener(getOnTouchListener(viewHolder, actionState, dX, left, right, top, bottom))
+            recyclerView.setOnTouchListener(getOnTouchListener())
         }
 
         onChildDrawImpl(canvas, recyclerView, viewHolder, translationX, dY, actionState, isCurrentlyActive)
@@ -113,25 +108,38 @@ open class OnSwipeRecyclerViewListener(
             .decorate()
     }
 
+    protected fun getViewHolderByCoordinates(y: Float): RecyclerView.ViewHolder? {
+        val items = swipedItems.filter { it.key.itemView.top.toFloat() <= y && it.key.itemView.bottom.toFloat() >= y }
+        return if (items.isEmpty()) null else items.toList()[0].first
+    }
+
+    protected fun getBlockSize(): Float {
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            MAX_SWIPE_SIZE.toFloat(),
+            context.resources.displayMetrics
+        )
+    }
+
     private fun getOnTouchListener(
-        viewHolder: RecyclerView.ViewHolder,
-        actionState: Int,
-        dX: Float,
-        left: Float,
-        right: Float,
-        top: Float,
-        bottom: Float
     ): View.OnTouchListener {
         return View.OnTouchListener { _, motionEvent ->
-            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE &&
-                motionEvent.action == MotionEvent.ACTION_DOWN &&
-                motionEvent.x >= left && motionEvent.x <= right &&
-                motionEvent.y <= bottom && motionEvent.y >= top
-            ) {
-                if (dX > 0) {
-                    adapter.onEditTask(viewHolder.adapterPosition)
-                } else {
-                    adapter.onDeleteTask(viewHolder.adapterPosition)
+            val viewHolder = getViewHolderByCoordinates(motionEvent.y)
+            if (viewHolder != null) {
+                val blockSize = getBlockSize()
+                val direction = swipedItems[viewHolder]
+                var left: Float = viewHolder.itemView.left.toFloat()
+                val right: Float = if (direction == ItemTouchHelper.RIGHT) (left + blockSize) else viewHolder.itemView.right.toFloat()
+                left = if (direction == ItemTouchHelper.RIGHT) left else right - blockSize
+                if (motionEvent.action == MotionEvent.ACTION_DOWN &&
+                    motionEvent.x >= left && motionEvent.x <= right
+                ) {
+                    if (direction == ItemTouchHelper.RIGHT) {
+                        adapter.onEditTask(viewHolder.adapterPosition)
+                    } else if (direction == ItemTouchHelper.LEFT) {
+                        adapter.onDeleteTask(viewHolder.adapterPosition)
+                        swipedItems.remove(viewHolder)
+                    }
                 }
             }
             return@OnTouchListener false
@@ -139,6 +147,6 @@ open class OnSwipeRecyclerViewListener(
     }
 
     companion object {
-        private const val MAX_SWIPE_COEFFICIENT = 1.0f
+        private const val MAX_SWIPE_SIZE = 56
     }
 }
