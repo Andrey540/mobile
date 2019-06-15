@@ -42,6 +42,14 @@ class TaskListViewRecyclerAdapter(
         mTasks = taskList
     }
 
+    fun onSwipe(position: Int) {
+        val task = mTasks[position]
+        if (task.swiped) {
+            notifyItemChanged(position)
+        }
+        task.swiped = !task.swiped
+    }
+
     fun onEditTask(position: Int) {
         editListener(mTasks[position])
     }

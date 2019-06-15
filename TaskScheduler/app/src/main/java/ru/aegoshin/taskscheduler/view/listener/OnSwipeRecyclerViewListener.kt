@@ -12,7 +12,6 @@ import android.view.MotionEvent
 import android.view.View
 import ru.aegoshin.taskscheduler.view.adapter.TaskListViewRecyclerAdapter
 
-
 open class OnSwipeRecyclerViewListener(
     protected val context: Context,
     protected val adapter: TaskListViewRecyclerAdapter,
@@ -35,15 +34,12 @@ open class OnSwipeRecyclerViewListener(
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        if (swipedItems.contains(viewHolder)) {
-            swipedItems.remove(viewHolder)
-            adapter.notifyItemChanged(viewHolder.adapterPosition)
-        } else {
-            swipedItems[viewHolder] = direction
-        }
+        swipedItems[viewHolder] = direction
+        adapter.onSwipe(viewHolder.adapterPosition)
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+        super.clearView(recyclerView, viewHolder)
         swipedItems.remove(viewHolder)
     }
 

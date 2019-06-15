@@ -4,6 +4,7 @@ import ru.aegoshin.application.task.TaskStatus
 
 class TaskViewModel (
     var selected: Boolean,
+    var swiped: Boolean,
     val id: String,
     val title: String,
     val scheduledTime: Long?,

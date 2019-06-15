@@ -20,8 +20,10 @@ open class TaskListViewModel(
 
     override fun updateList(list: List<Task>) {
         val selectedIds = getSelectedIds()
+        val swipedIds = getSwipedIds()
         val newList = createTaskList(list)
         newList.forEach { it.selected = (selectedIds.indexOf(it.id) != -1) }
+        newList.forEach { it.swiped = (swipedIds.indexOf(it.id) != -1) }
         taskList.value = newList
     }
 
@@ -36,10 +38,18 @@ open class TaskListViewModel(
     private fun convertTask(task: Task): TaskViewModel {
         return TaskViewModel(
             false,
+            false,
             task.id,
             task.title,
             task.scheduledTime,
             task.status
         )
+    }
+
+    private fun getSwipedIds(): List<String> {
+        if (taskList.value !== null) {
+            return taskList.value!!.filter { it.swiped }.map { it.id }
+        }
+        return listOf()
     }
 }
