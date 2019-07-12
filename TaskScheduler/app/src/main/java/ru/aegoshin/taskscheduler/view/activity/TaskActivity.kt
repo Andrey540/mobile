@@ -5,7 +5,6 @@ import android.widget.DatePicker
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
-import android.support.constraint.ConstraintLayout
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View.INVISIBLE
@@ -53,7 +52,7 @@ class TaskActivity : LocalisedActivity() {
 
         if (startedFromInbox) {
             dateTimeLayout.visibility = INVISIBLE
-            (notificationLayout.layoutParams as ConstraintLayout.LayoutParams).topToBottom = taskDescriptionText.id
+            dateTimeLayout.layoutParams.height = 0
             isCompletedCheckBox.visibility = INVISIBLE
         }
 
